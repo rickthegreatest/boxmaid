@@ -142,6 +142,20 @@ func (g *graph) finish() {
 			e.minlen = 1
 		}
 	}
+	// Anonymous subgraphs get an id of their own, in tree order.
+	n := 0
+	var name func(c *cluster)
+	name = func(c *cluster) {
+		for _, ch := range c.children {
+			if ch.id == "" {
+				n++
+				ch.id = "\x00cluster" + itoa(n)
+				g.clusters[ch.id] = ch
+			}
+			name(ch)
+		}
+	}
+	name(g.root)
 }
 
 func remove(ids []string, id string) []string {

@@ -168,11 +168,7 @@ func (l *level) process() {
 		l.items = append(l.items, it)
 		l.direct[id] = it
 	}
-	for i, c := range l.cl.children {
-		if c.id == "" {
-			c.id = "\x00cluster" + string(rune('0'+i))
-			l.g.clusters[c.id] = c
-		}
+	for _, c := range l.cl.children {
 		it := &item{kind: kCluster, clusterID: c.id, sub: &level{g: l.g, cl: c, framed: true, wrap: l.wrap, ascii: l.ascii}}
 		l.items = append(l.items, it)
 		l.direct[c.id] = it
