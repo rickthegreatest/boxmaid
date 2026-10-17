@@ -59,3 +59,17 @@ func TestGolden(t *testing.T) {
 		}
 	}
 }
+
+// ASCII mode is pure ASCII.
+func TestASCIIGoldensArePureASCII(t *testing.T) {
+	files, _ := filepath.Glob("testdata/golden/*.ascii.txt")
+	for _, f := range files {
+		b, _ := os.ReadFile(f)
+		for i, r := range string(b) {
+			if r > 127 {
+				t.Errorf("%s: %q at byte %d", f, r, i)
+				break
+			}
+		}
+	}
+}

@@ -107,6 +107,13 @@ func maxWidth(lines []string) int {
 // letter) when there is one in the second half, else exactly max columns.
 func breakWord(w string, max int) string {
 	head := truncate(w, max)
+	if head == "" { // a wide character in a 1-column space: take it anyway
+		gs, _ := graphemes(w)
+		if len(gs) == 0 {
+			return w
+		}
+		return gs[0]
+	}
 	best := -1
 	rs := []rune(head)
 	full := []rune(w)

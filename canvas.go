@@ -159,6 +159,17 @@ func (c *canvas) text(x, y int, s string, role Role, color string, bold bool) {
 		if ws[i] == 2 && c.at(x+1, y) == nil {
 			return
 		}
+		if c.ascii {
+			// ASCII mode: every cell gets a plain character of its own.
+			a := asciiGrapheme(g, ws[i])
+			cell.text, cell.role, cell.color, cell.bold, cell.wide = a[:1], role, color, bold, false
+			if ws[i] == 2 {
+				n := c.at(x+1, y)
+				n.text, n.wide, n.role, n.color, n.bold = a[1:2], false, role, color, bold
+			}
+			x += ws[i]
+			continue
+		}
 		cell.text, cell.role, cell.color, cell.bold, cell.wide = g, role, color, bold, false
 		if ws[i] == 2 {
 			n := c.at(x+1, y)
@@ -214,7 +225,7 @@ func (c *canvas) resolve(cell *ccell) string {
 	}
 	if cell.glyph != "" {
 		if c.ascii {
-			return asciiGlyph(cell.glyph)
+			return asciiGrapheme(cell.glyph, 1)
 		}
 		return cell.glyph
 	}
@@ -265,46 +276,6 @@ func (c *canvas) resolve(cell *ccell) string {
 		}
 	}
 	return lightGlyphs[b]
-}
-
-func asciiGlyph(g string) string {
-	switch g {
-	case "▼":
-		return "v"
-	case "▲":
-		return "^"
-	case "►", "▶":
-		return ">"
-	case "◄", "◀":
-		return "<"
-	case "○", "◯":
-		return "o"
-	case "×":
-		return "x"
-	case "●":
-		return "*"
-	case "◉":
-		return "@"
-	case "▽":
-		return "V"
-	case "△":
-		return "A"
-	case "▷":
-		return ">"
-	case "◁":
-		return "<"
-	case "◆":
-		return "*"
-	case "◇":
-		return "o"
-	case "╱":
-		return "/"
-	case "╲":
-		return "\\"
-	case "━":
-		return "="
-	}
-	return "+"
 }
 
 // picture freezes the canvas, trimming blank rows and columns at the edges.

@@ -2,16 +2,16 @@ kind: requirement
 title: 
 
   +------------------+
-  |    «Element»     |
+  |    <Element>     |
   |   test_entity    |
   +------------------+
   | Type: simulation |
   +---------+--------+
             |
-       «satisfies»
+       <satisfies>
             v
 +----------------------+
-|    «Requirement»     |
+|    <Requirement>     |
 |       test_req       |
 +----------------------+
 | Id: 1                |

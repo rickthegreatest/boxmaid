@@ -10,7 +10,7 @@ title:
                    houses                |
                       | *                |
             +---------+---------+        |
-            |    «abstract»     |        |
+            |    <abstract>     |        |
             |      Animal       |        |
             +-------------------+   +----+----+
             | +String name      |   | List<T> |

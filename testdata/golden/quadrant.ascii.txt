@@ -1,7 +1,7 @@
 kind: quadrant
 title: Reach and engagement of campaigns
 
-+-------------------------------+------------------------------+ ↑ High Engagement
++-------------------------------+------------------------------+ ^ High Engagement
 |       Need to promote         :      We should expand        |
 |                               :                              |
 |                               :                              |
@@ -25,5 +25,5 @@ title: Reach and engagement of campaigns
 |                               :                              |
 |                               :                              |
 |                               :                              |
-+-------------------------------+------------------------------+ ↓ Low Engagement
++-------------------------------+------------------------------+ v Low Engagement
 Low Reach                                             High Reach
