@@ -1,0 +1,8 @@
+graph LR
+  subgraph AWS [AWS account]
+    L[Lambda] --> Q[[SQS queue]]
+    Q --> W(Worker)
+  end
+  U([User]) -->|HTTP| L
+  W -.->|writes| DB[(Dynamo)]
+  W ==> K>Kafka topic]

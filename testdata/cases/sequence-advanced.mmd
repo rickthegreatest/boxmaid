@@ -1,0 +1,22 @@
+sequenceDiagram
+  box Aqua Frontend
+    participant W as Web
+  end
+  participant A as API
+  W->>A: Request
+  par Fetch user
+    A->>A: load user
+  and Fetch cart
+    A->>A: load cart
+  end
+  critical Charge
+    A-xW: declined
+  option Retry
+    A--)W: retrying
+  end
+  rect rgb(200,200,255)
+    Note right of A: highlighted
+  end
+  break when closed
+    A->>W: bye
+  end

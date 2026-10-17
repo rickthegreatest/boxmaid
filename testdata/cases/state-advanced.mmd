@@ -1,0 +1,18 @@
+stateDiagram-v2
+  direction LR
+  [*] --> Idle
+  state fork_state <<fork>>
+  Idle --> fork_state
+  fork_state --> Fetch
+  fork_state --> Render
+  state join_state <<join>>
+  Fetch --> join_state
+  Render --> join_state
+  join_state --> check
+  state check <<choice>>
+  check --> Done : ok
+  check --> Idle : retry
+  Done --> [*]
+  note left of Idle
+    Waiting for input
+  end note

@@ -1,0 +1,22 @@
+classDiagram
+    direction TB
+    class Animal {
+        <<abstract>>
+        +String name
+        +int age
+        +makeSound() void
+    }
+    class Duck {
+        +String beakColor
+        +swim()
+        +quack()
+    }
+    class Fish
+    Fish : -int sizeInFeet
+    Fish : -canEat()
+    Animal <|-- Duck
+    Animal <|-- Fish
+    Zoo "1" o-- "*" Animal : houses
+    Duck ..> Pond : swims in
+    class List~T~
+    Zoo *-- List~T~

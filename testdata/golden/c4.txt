@@ -1,0 +1,46 @@
+kind: c4
+title: Consumer reviews
+
+     ╭────────────────────────╮
+     │        Customer        │
+     │                        │
+     │        [Person]        │
+     │ Orders food and writes │
+     │        reviews         │
+     ╰────────────┬───────────╯
+                  │
+           Writes reviews
+              [HTTPS]
+                  │
+╭─ JET ───────────┼────────────────╮
+│                 ▼                │
+│ ┌──────────────────────────────┐ │
+│ │           Reviews            │ │
+│ │                              │ │
+│ │           [System]           │ │
+│ │ Stores and moderates reviews │ │
+│ └───────────────┬──────────────┘ │
+│                 │                │
+│            ┌────┴────┐           │
+│            │         │           │
+│      Reads/writes    │           │
+│            ▼         │           │
+│    ╭──────────────╮  │           │
+│    ├──────────────┤  │           │
+│    │ Review store │  │           │
+│    │              │  │           │
+│    │   [System]   │  │           │
+│    │   DynamoDB   │  │           │
+│    ╰──────────────╯  │           │
+│                      │           │
+╰──────────────────────┼───────────╯
+                       │
+                    Syncs
+                    [REST]
+                       ▼
+         ┌┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┐
+         ┆        Trustpilot        ┆
+         ┆                          ┆
+         ┆         [System]         ┆
+         ┆ External review platform ┆
+         └┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┘

@@ -1,0 +1,21 @@
+kind: requirement
+title: 
+
+  ┌──────────────────┐
+  │    «Element»     │
+  │   test_entity    │
+  ├──────────────────┤
+  │ Type: simulation │
+  └─────────┬────────┘
+            │
+       «satisfies»
+            ▼
+┌──────────────────────┐
+│    «Requirement»     │
+│       test_req       │
+├──────────────────────┤
+│ Id: 1                │
+│ Text: the test text. │
+│ Risk: High           │
+│ Verification: Test   │
+└──────────────────────┘

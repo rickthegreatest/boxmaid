@@ -1,0 +1,10 @@
+gantt
+  dateFormat YYYY-MM-DD
+  title Release plan
+  section Build
+    Design   :d1, 2024-03-01, 4d
+    Code     :c1, after d1, 6d
+    Review   :r1, after c1 d1, 2d
+  section Ship
+    Freeze   :f1, 2024-03-15, until r2
+    Release  :crit, r2, 2024-03-18, 1d

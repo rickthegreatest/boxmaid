@@ -1,0 +1,13 @@
+classDiagram
+  namespace Shapes {
+    class Shape {
+      <<interface>>
+      +area() double
+    }
+    class Circle {
+      +double r
+    }
+  }
+  Shape <|.. Circle
+  note for Circle "r must be positive"
+  Circle "1" --> "0..*" Point : centre

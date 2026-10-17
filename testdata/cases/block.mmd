@@ -1,0 +1,12 @@
+block-beta
+columns 3
+a["Frontend"] b["API"] c[("Database")]
+space d["Cache"]:2
+block:group1["Workers"]:3
+  columns 2
+  e f
+end
+a --> b
+b --> c
+b -- "reads" --> d
+d --> e

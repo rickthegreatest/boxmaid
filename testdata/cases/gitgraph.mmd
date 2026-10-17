@@ -1,0 +1,18 @@
+gitGraph
+    commit
+    commit id: "fix-1"
+    branch develop
+    checkout develop
+    commit
+    commit type: HIGHLIGHT
+    checkout main
+    merge develop tag: "v1.0"
+    commit
+    branch feature
+    commit
+    checkout develop
+    commit
+    checkout feature
+    commit type: REVERSE
+    checkout main
+    merge feature

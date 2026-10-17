@@ -1,0 +1,10 @@
+flowchart TD
+    A[Request arrives] --> B{Unhandled exception?}
+    B -- Yes --> M1[Return default Manual response]
+    B -- No --> C{Existing recommendation?}
+    C -- Yes --> C1[Return cached action]
+    C -- No --> D{Manual override?}
+    D -- Yes --> M3[Return Manual]
+    D -- No --> E[Collect signals]
+    C1 --> Z[(Database)]
+    E --> Z

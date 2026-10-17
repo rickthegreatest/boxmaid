@@ -1,0 +1,15 @@
+stateDiagram-v2
+    [*] --> Draft
+    Draft --> Review : submit
+    state Review {
+        [*] --> Checking
+        Checking --> Approved : ok
+        Checking --> Rejected : changes
+    }
+    Review --> Published : approved
+    state ifbig <<choice>>
+    Published --> ifbig
+    ifbig --> Archived : older than 1y
+    ifbig --> Published : still current
+    Archived --> [*]
+    note right of Draft : authors only

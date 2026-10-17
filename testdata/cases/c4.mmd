@@ -1,0 +1,11 @@
+C4Context
+  title Consumer reviews
+  Person(customer, "Customer", "Orders food and writes reviews")
+  Enterprise_Boundary(jet, "JET") {
+    System(reviews, "Reviews", "Stores and moderates reviews")
+    SystemDb(store, "Review store", "DynamoDB")
+  }
+  System_Ext(trust, "Trustpilot", "External review platform")
+  Rel(customer, reviews, "Writes reviews", "HTTPS")
+  Rel(reviews, store, "Reads/writes")
+  Rel(reviews, trust, "Syncs", "REST")

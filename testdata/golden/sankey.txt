@@ -1,0 +1,14 @@
+kind: sankey
+title: 
+
+Agricultural 'waste'  124.73
+  █████████████████▊ 124.73 → Bio-conversion
+
+Biofuel imports       35
+  █████ 35 → Liquid
+
+Bio-conversion        388.93
+  ▏ 0.6 → Liquid
+  ███▉ 26.86 → Losses
+  ████████████████████████████████████████ 280.32 → Solid
+  ███████████▋ 81.14 → Gas

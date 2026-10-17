@@ -1,0 +1,6 @@
+kind: pie
+title: Deploys by stage
+
+Production  ███████████████████ 46.7%
+Staging     █████████████ 33.3%
+QA          ████████ 20.0%

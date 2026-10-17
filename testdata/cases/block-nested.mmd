@@ -1,0 +1,11 @@
+block-beta
+  columns 2
+  block:outer["Region"]:2
+    columns 2
+    block:inner["Cluster"]
+      p1 p2
+    end
+    lb["Load balancer"]
+  end
+  client["Client"]
+  client --> lb

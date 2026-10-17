@@ -1,0 +1,19 @@
+sequenceDiagram
+    title Checkout
+    autonumber
+    actor U as Customer
+    participant API as Checkout API
+    participant P as Payments
+    U->>+API: POST /checkout
+    API->>P: Authorise card
+    alt card ok
+        P-->>API: 200 authorised
+    else declined
+        P-->>API: 402
+        API-->>U: Payment failed
+    end
+    loop every 5s
+        API->>API: poll status
+    end
+    Note over API,P: idempotency key per order
+    API-->>-U: 201 Created

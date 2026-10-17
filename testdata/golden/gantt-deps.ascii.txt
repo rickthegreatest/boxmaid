@@ -1,0 +1,12 @@
+kind: gantt
+title: Release plan
+
+           Mar 01   Mar 03    Mar 06    Mar 08   Mar 11    Mar 13    Mar 16
+           +--------+---------+---------+--------+---------+---------+----------
+Build
+ Design    ███████████████
+ Code                     ██████████████████████
+ Review                                         ████████
+Ship
+ Freeze                                                        ████████████
+ Release                                                                   ████

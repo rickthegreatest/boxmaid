@@ -1,0 +1,46 @@
+kind: c4
+title: Consumer reviews
+
+     +------------------------+
+     |        Customer        |
+     |                        |
+     |        [Person]        |
+     | Orders food and writes |
+     |        reviews         |
+     +------------+-----------+
+                  |
+           Writes reviews
+              [HTTPS]
+                  |
++- JET -----------+----------------+
+|                 v                |
+| +------------------------------+ |
+| |           Reviews            | |
+| |                              | |
+| |           [System]           | |
+| | Stores and moderates reviews | |
+| +---------------+--------------+ |
+|                 |                |
+|            +----+----+           |
+|            |         |           |
+|      Reads/writes    |           |
+|            v         |           |
+|    +--------------+  |           |
+|    +--------------+  |           |
+|    | Review store |  |           |
+|    |              |  |           |
+|    |   [System]   |  |           |
+|    |   DynamoDB   |  |           |
+|    +--------------+  |           |
+|                      |           |
++----------------------+-----------+
+                       |
+                    Syncs
+                    [REST]
+                       v
+         +..........................+
+         :        Trustpilot        :
+         :                          :
+         :         [System]         :
+         : External review platform :
+         +..........................+

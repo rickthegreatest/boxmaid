@@ -1,0 +1,12 @@
+kind: gantt
+title: A Gantt Diagram
+
+               Jan 01   Jan 04   Jan 07    Jan 10   Jan 13   Jan 16    Jan 19   Jan 22   Jan 25
+               ┬────────┬────────┬─────────┬────────┬────────┬─────────┬────────┬────────┬──────────
+Section
+ A task        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+ Another task                             █████████████████████
+Another
+ Task in sec                                    ███████████████
+ another task                                                  █████████████████████
+ Release                                                                                           ◆
