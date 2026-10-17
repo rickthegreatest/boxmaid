@@ -1,6 +1,7 @@
 kind: xychart
 title: Sales Revenue
 
+Revenue (in $)
  11000|                    ### ##*...
       |                    ##*.### ##*.
       |                ##*.### ### ### ..
@@ -15,4 +16,3 @@ title: Sales Revenue
   4000|### ### ### ### ### ### ### ### ### ### ### ###
       +-------------------------------------------------
        jan feb mar apr may jun jul aug sep oct nov dec
-Revenue (in $)

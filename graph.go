@@ -9,6 +9,7 @@ type graph struct {
 	edges    []*edge
 	root     *cluster
 	clusters map[string]*cluster
+	edgeIDs  map[string]bool // ids given to edges ("A e1@--> B")
 }
 
 type shape uint8
@@ -95,7 +96,7 @@ type cluster struct {
 
 func newGraph(dir string) *graph {
 	root := &cluster{}
-	return &graph{dir: dir, nodes: map[string]*node{}, root: root, clusters: map[string]*cluster{}}
+	return &graph{dir: dir, nodes: map[string]*node{}, root: root, clusters: map[string]*cluster{}, edgeIDs: map[string]bool{}}
 }
 
 // node returns the node with id, creating it in c when it's new. A node

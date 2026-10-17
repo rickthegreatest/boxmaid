@@ -1,0 +1,12 @@
+kind: requirement
+title: 
+
++--------------------------+
+| <Functional Requirement> |
+|        empty_risk        |
++--------------------------+
+| Id: 2                    |
+| Text: risk left blank    |
+| Risk:                    |
+| Verification: Inspection |
++--------------------------+

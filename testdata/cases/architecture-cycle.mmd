@@ -1,0 +1,8 @@
+architecture-beta
+    group a(cloud)[Alpha] in b
+    group b(cloud)[Beta] in a
+    group c(cloud)[Self] in c
+    service x(server)[X] in a
+    service y(server)[Y] in b
+    service z(server)[Z] in c
+    x:R --> L:y

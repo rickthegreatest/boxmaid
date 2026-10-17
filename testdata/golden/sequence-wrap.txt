@@ -1,0 +1,49 @@
+kind: sequence
+title: 
+
+┌─────────┐    ┌──────────────────┐                                             ┌──────────────────┐
+│ Shopper │    │ Checkout service │                                             │ Payment provider │
+└─────────┘    └──────────────────┘                                             └──────────────────┘
+     ┆                   ┆                                                                ┆
+     ┆     Place the     ┆                                                                ┆
+     ┆    order with     ┆                                                                ┆
+     ┆    everything     ┆                                                                ┆
+     ┆  that is in the   ┆                                                                ┆
+     ┆   basket right    ┆                                                                ┆
+     ┆        now        ┆                                                                ┆
+     ├──────────────────►┆                                                                ┆
+     ┆                   ┆                                                                ┆
+     ┆                ┌ alt [card accepted by the payment provider after the fraud checks] ──────────────┐
+     ┆                │  ┆                                                                ┆              │
+     ┆                │  ┆                          Charge the                            ┆              │
+     ┆                │  ┆                         card for the                           ┆              │
+     ┆                │  ┆                          full amount                           ┆              │
+     ┆                │  ┆                           including                            ┆              │
+     ┆                │  ┆                        delivery costs                          ┆              │
+     ┆                │  ├───────────────────────────────────────────────────────────────►┆              │
+     ┆                │  ┆                                                                ┆              │
+     ┆                │  ┆                            Payment                             ┆              │
+     ┆                │  ┆                        confirmed with                          ┆              │
+     ┆                │  ┆                          a reference                           ┆              │
+     ┆                │  ┆                            for the                             ┆              │
+     ┆                │  ┆                            receipt                             ┆              │
+     ┆                │  ┆◄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤              │
+     ┆                │  ┆                                                                ┆              │
+     ┆                ├ else [card declined because of insufficient funds or a block] ┄┄┄┄┼┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+     ┆                │  ┆                                                                ┆              │
+     ┆                │  ┆                         Declined with                          ┆              │
+     ┆                │  ┆                         a reason the                           ┆              │
+     ┆                │  ┆                          shopper can                           ┆              │
+     ┆                │  ┆                          understand                            ┆              │
+     ┆                │  ┆◄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤              │
+     ┆                │  ┆                                                                ┆              │
+     ┆                └──┼────────────────────────────────────────────────────────────────┼──────────────┘
+     ┆                   ┆                                                                ┆
+     ┆     Show the      ┆                                                                ┆
+     ┆      result       ┆                                                                ┆
+     ┆◄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤                                                                ┆
+     ┆                   ┆                                                                ┆
+     ┆                   ┆                                                                ┆
+┌─────────┐    ┌──────────────────┐                                             ┌──────────────────┐
+│ Shopper │    │ Checkout service │                                             │ Payment provider │
+└─────────┘    └──────────────────┘                                             └──────────────────┘

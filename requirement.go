@@ -3,6 +3,8 @@ package boxmaid
 import (
 	"regexp"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 // Requirement diagrams, architecture diagrams and block diagrams, drawn
@@ -47,7 +49,9 @@ func parseRequirement(_, rest string) (*graph, string, error) {
 				}
 				v := strings.Trim(strings.TrimSpace(m[2]), `"`)
 				if name == "Risk" || name == "Verification" {
-					v = strings.ToUpper(v[:1]) + v[1:]
+					if r, size := utf8.DecodeRuneInString(v); size > 0 {
+						v = string(unicode.ToUpper(r)) + v[size:]
+					}
 				}
 				fields = append(fields, name+": "+v)
 			}
@@ -148,7 +152,7 @@ func parseArchitecture(_, rest string) (*graph, string, error) {
 	for _, gr := range groups {
 		c := g.clusters[gr.id]
 		parent := g.root
-		if p, ok := g.clusters[gr.parent]; ok && gr.parent != "" {
+		if p, ok := g.clusters[gr.parent]; ok && gr.parent != "" && !within(p, c) {
 			parent = p
 		}
 		c.parent = parent
@@ -170,4 +174,15 @@ func parseArchitecture(_, rest string) (*graph, string, error) {
 		return nil, "", ErrEmpty
 	}
 	return g, "", nil
+}
+
+// within says whether c is p or one of its ancestors so far, which would
+// make putting p inside c a cycle ("group a in b", "group b in a").
+func within(p, c *cluster) bool {
+	for cur := p; cur != nil; cur = cur.parent {
+		if cur == c {
+			return true
+		}
+	}
+	return false
 }

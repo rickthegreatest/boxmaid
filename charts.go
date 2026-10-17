@@ -110,6 +110,12 @@ func renderQuadrant(_, rest string, opt Options) (*Picture, string, error) {
 	return cv.picture(), title, nil
 }
 
+// xySeries is one bar or line series of an XY chart.
+type xySeries struct {
+	bar  bool
+	vals []float64
+}
+
 // renderXYChart draws bar and line series over categories or a numeric x
 // axis; "xychart-beta horizontal" lays the bars sideways.
 func renderXYChart(body, rest string, opt Options) (*Picture, string, error) {
@@ -118,11 +124,7 @@ func renderXYChart(body, rest string, opt Options) (*Picture, string, error) {
 	var cats []string
 	var yMin, yMax float64
 	yRange := false
-	type series struct {
-		bar  bool
-		vals []float64
-	}
-	var all []series
+	var all []xySeries
 	for _, raw := range strings.Split(rest, "\n") {
 		line := strings.TrimSpace(raw)
 		word, arg, _ := strings.Cut(line, " ")
@@ -150,7 +152,7 @@ func renderXYChart(body, rest string, opt Options) (*Picture, string, error) {
 			}
 		default:
 			if m := seriesRe.FindStringSubmatch(line); m != nil {
-				s := series{bar: m[1] == "bar"}
+				s := xySeries{bar: m[1] == "bar"}
 				for _, v := range strings.Split(m[2], ",") {
 					f, err := strconv.ParseFloat(strings.TrimSpace(v), 64)
 					if err == nil {
@@ -183,11 +185,15 @@ func renderXYChart(body, rest string, opt Options) (*Picture, string, error) {
 		}
 	}
 	if horizontal {
-		return xyHorizontal(title, cats, all[0].vals, yMin, yMax, opt), title, nil
+		return xyHorizontal(cats, all, xTitle, yTitle, yMin, yMax, opt), title, nil
 	}
-	_ = xTitle
-	// Vertical: a value axis on the left, a column per category.
+	// Vertical: a value axis on the left, a column per category. The y
+	// title heads the value axis; the x title sits under the categories.
 	H := 12
+	top := 0
+	if yTitle != "" {
+		top = 1
+	}
 	nBars := 0
 	for _, s := range all {
 		if s.bar {
@@ -201,18 +207,22 @@ func renderXYChart(body, rest string, opt Options) (*Picture, string, error) {
 	fmtV := formatNumber
 	axisW := max(width(fmtV(yMax)), width(fmtV(yMin))) + 1
 	x0 := axisW + 1
-	cv := newCanvas(x0+n*colW+2, H+4, opt.ASCII)
+	rows := top + H + 2
+	if xTitle != "" {
+		rows++
+	}
+	cv := newCanvas(max(x0+n*colW+2, width(yTitle)), rows, opt.ASCII)
+	if yTitle != "" {
+		cv.text(0, 0, yTitle, RoleMuted, "", false)
+	}
 	// The axis with three values.
-	cv.vline(x0-1, 0, H, lineSolid, RoleMuted, "")
-	cv.hline(x0-1, x0+n*colW, H, lineSolid, RoleMuted, "")
+	cv.vline(x0-1, top, top+H, lineSolid, RoleMuted, "")
+	cv.hline(x0-1, x0+n*colW, top+H, lineSolid, RoleMuted, "")
 	for _, f := range []float64{0, 0.5, 1} {
 		v := yMin + f*(yMax-yMin)
 		y := H - 1 - int(f*float64(H-1)+0.5)
 		lbl := fmtV(v)
-		cv.text(axisW-width(lbl), y, lbl, RoleMuted, "", false)
-	}
-	if yTitle != "" {
-		cv.text(0, H+2, yTitle, RoleMuted, "", false)
+		cv.text(axisW-width(lbl), top+y, lbl, RoleMuted, "", false)
 	}
 	eighths := []string{" ", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"}
 	if opt.ASCII {
@@ -232,7 +242,7 @@ func renderXYChart(body, rest string, opt Options) (*Picture, string, error) {
 			units := int(height(v)*8 + 0.5)
 			for row := 0; units > 0; row++ {
 				part := min(8, units)
-				cv.text(x, H-1-row, strings.Repeat(eighths[part], barW), RoleBar, gitColors[bi%len(gitColors)], false)
+				cv.text(x, top+H-1-row, strings.Repeat(eighths[part], barW), RoleBar, gitColors[bi%len(gitColors)], false)
 				units -= part
 			}
 		}
@@ -245,7 +255,7 @@ func renderXYChart(body, rest string, opt Options) (*Picture, string, error) {
 		var prev [2]int
 		for i, v := range s.vals {
 			x := x0 + i*colW + colW/2
-			y := H - 1 - int(height(v)*float64(H-1)/float64(H)+0.5)
+			y := top + H - 1 - int(height(v)*float64(H-1)/float64(H)+0.5)
 			if i > 0 {
 				drawDots(cv, prev, [2]int{x, y})
 			}
@@ -254,7 +264,11 @@ func renderXYChart(body, rest string, opt Options) (*Picture, string, error) {
 		}
 	}
 	for i, c := range cats {
-		cv.text(x0+i*colW, H+1, truncate(c, colW-1), RoleMuted, "", false)
+		cv.text(x0+i*colW, top+H+1, truncate(c, colW-1), RoleMuted, "", false)
+	}
+	if xTitle != "" {
+		t := truncate(xTitle, n*colW)
+		cv.text(x0+(n*colW-width(t))/2, top+H+2, t, RoleMuted, "", false)
 	}
 	return cv.picture(), title, nil
 }
@@ -271,28 +285,86 @@ func drawDots(cv *canvas, a, b [2]int) {
 	}
 }
 
-// xyHorizontal draws one bar series sideways: a row per category.
-func xyHorizontal(title string, cats []string, vals []float64, lo, hi float64, opt Options) *Picture {
-	nameW := maxWidth(cats)
+// xyHorizontal draws the series sideways: a block of rows per category,
+// one row for each bar series, with line series as points joined across
+// the blocks. The x title heads the category names; the y title sits under
+// the bars.
+func xyHorizontal(cats []string, all []xySeries, xTitle, yTitle string, lo, hi float64, opt Options) *Picture {
+	nameW := max(maxWidth(cats), width(xTitle))
 	W := 50
 	if opt.Width > 0 {
 		W = max(10, min(60, opt.Width-nameW-12))
 	}
-	cv := newCanvas(nameW+W+14, len(cats)+1, opt.ASCII)
+	nBars := 0
+	for _, s := range all {
+		if s.bar {
+			nBars++
+		}
+	}
+	k := max(1, nBars)
+	gap := 0
+	if k > 1 {
+		gap = 1
+	}
+	top := 0
+	if xTitle != "" {
+		top = 1
+	}
+	rows := top + len(cats)*(k+gap) - gap + 1
+	if yTitle != "" {
+		rows++
+	}
+	cv := newCanvas(nameW+W+14, rows, opt.ASCII)
+	if xTitle != "" {
+		cv.text(0, 0, xTitle, RoleMuted, "", false)
+	}
+	block := func(i int) int { return top + i*(k+gap) }
+	frac := func(v float64) float64 { return math.Max(0, math.Min(1, (v-lo)/(hi-lo))) }
 	eighths := []string{"", "▏", "▎", "▍", "▌", "▋", "▊", "▉", "█"}
 	for i, c := range cats {
-		cv.text(0, i, c, RoleNodeText, "", false)
-		if i >= len(vals) {
+		cv.text(0, block(i), c, RoleNodeText, "", false)
+	}
+	bi := 0
+	for _, s := range all {
+		if !s.bar {
 			continue
 		}
-		units := int(math.Max(0, math.Min(1, (vals[i]-lo)/(hi-lo)))*float64(W)*8 + 0.5)
-		bar := strings.Repeat("█", units/8) + eighths[units%8]
-		if opt.ASCII {
-			bar = strings.Repeat("#", (units+4)/8)
+		for i, v := range s.vals {
+			if i >= len(cats) {
+				break
+			}
+			y := block(i) + bi
+			units := int(frac(v)*float64(W)*8 + 0.5)
+			bar := strings.Repeat("█", units/8) + eighths[units%8]
+			if opt.ASCII {
+				bar = strings.Repeat("#", (units+4)/8)
+			}
+			cv.text(nameW+2, y, bar, RoleBar, gitColors[bi%len(gitColors)], false)
+			cv.text(nameW+3+width(bar), y, formatNumber(v), RoleMuted, "", false)
 		}
-		cv.text(nameW+2, i, bar, RoleBar, gitColors[0], false)
-		cv.text(nameW+3+width(bar), i, formatNumber(vals[i]), RoleMuted, "", false)
+		bi++
 	}
-	_ = title
+	for li, s := range all {
+		if s.bar {
+			continue
+		}
+		var prev [2]int
+		for i, v := range s.vals {
+			if i >= len(cats) {
+				break
+			}
+			x := nameW + 2 + min(W-1, int(frac(v)*float64(W-1)+0.5))
+			y := block(i) + (k-1)/2
+			if i > 0 {
+				drawDots(cv, prev, [2]int{x, y})
+			}
+			cv.text(x, y, "●", RoleAccent, gitColors[(li+3)%len(gitColors)], true)
+			prev = [2]int{x, y}
+		}
+	}
+	if yTitle != "" {
+		t := truncate(yTitle, W)
+		cv.text(nameW+2+(W-width(t))/2, rows-1, t, RoleMuted, "", false)
+	}
 	return cv.picture()
 }

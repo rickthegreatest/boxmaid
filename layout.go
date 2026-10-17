@@ -407,7 +407,8 @@ func (l *level) reservePorts() {
 		}
 	}
 	for _, it := range l.items {
-		if it.kind == kNode && marked[it] {
+		// A single edge has the centre to itself.
+		if it.kind == kNode && marked[it] && in[it]+out[it] > 1 {
 			it.minO = 2*max(in[it], out[it]) + 3
 		}
 	}

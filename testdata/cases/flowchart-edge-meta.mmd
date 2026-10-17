@@ -1,0 +1,8 @@
+flowchart LR
+  A[Build] e1@--> B[Test]
+  B e2@==> C[Ship]
+  e1@{ animate: true }
+  e2@{ animation: fast }
+  e3@{ curve: linear }
+  D@{ shape: cyl, label: "Artifacts" }
+  C --> D

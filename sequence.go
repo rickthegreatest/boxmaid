@@ -133,7 +133,7 @@ func parseSequence(src string) (*seqParser, error) {
 		case "autonumber":
 			p.auto = true
 			continue
-		case "link", "links", "accTitle", "accDescr", "accTitle:", "accDescr:", "destroy":
+		case "link", "links", "acctitle", "accdescr", "acctitle:", "accdescr:", "destroy":
 			continue
 		case "box":
 			p.group = &seqGroup{title: boxTitle(rest), first: len(p.parts), last: len(p.parts) - 1}
@@ -470,6 +470,7 @@ func (p *seqParser) draw(wrapAt int, ascii bool) *Picture {
 			y += len(labels[e]) + 3
 		case evBlock:
 			e.block.top = y
+			e.block.elses = nil // from an earlier, wider attempt
 			y += 2
 		case evElse:
 			e.block.elses = append(e.block.elses, seqElse{row: y, kind: e.label[0], label: e.label[1]})

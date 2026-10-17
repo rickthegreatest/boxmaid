@@ -2,7 +2,7 @@
 name = "boxmaid"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.80"
+rust-version = "1.82"
 license = "MIT"
 description = "Mermaid diagrams for the terminal: flowcharts, sequence, class, state, ER, gantt and more, drawn with box characters"
 repository = "https://github.com/boxmaid/boxmaid"
@@ -29,3 +29,7 @@ path = "src/bin/boxmaid.rs"
 [[example]]
 name = "ratatui_viewer"
 required-features = ["ratatui"]
+
+[dev-dependencies]
+# The viewer example runs in a real terminal.
+ratatui = { version = "0.29", features = ["crossterm"] }

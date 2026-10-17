@@ -20,6 +20,7 @@ var (
 	}
 	pipeLabel = regexp.MustCompile(`^\s*\|([^|]*)\|`)
 	edgeID    = regexp.MustCompile(`^[A-Za-z0-9_]+@`)
+	metaStmt  = regexp.MustCompile(`^([A-Za-z0-9_]+)@\{(.*)\}$`)
 	styleKV   = regexp.MustCompile(`(stroke|fill|color)\s*:\s*(#[0-9a-fA-F]{3,8}|[a-zA-Z]+)`)
 )
 
@@ -108,6 +109,9 @@ func parseFlowchart(src string) (*graph, error) {
 				}
 				continue
 			case "linkStyle", "click", "accTitle", "accDescr", "accTitle:", "accDescr:", "callback", "interpolate":
+				continue
+			}
+			if edgeMeta(g, st) {
 				continue
 			}
 			parseChain(g, cur, st)
@@ -449,10 +453,36 @@ func splitTopLevel(s string, sep rune) []string {
 	return append(out, s[start:])
 }
 
+// edgeMeta says whether a statement only styles an edge ("e1@{ animate:
+// true }"): one about a known edge id, or with only edge keys. Such
+// statements aren't nodes.
+func edgeMeta(g *graph, st string) bool {
+	m := metaStmt.FindStringSubmatch(st)
+	if m == nil {
+		return false
+	}
+	if g.edgeIDs[m[1]] {
+		return true
+	}
+	keys := 0
+	for _, kv := range splitTopLevel(m[2], ',') {
+		k, _, _ := strings.Cut(kv, ":")
+		switch strings.TrimSpace(k) {
+		case "animate", "animation", "curve":
+			keys++
+		case "":
+		default:
+			return false
+		}
+	}
+	return keys > 0
+}
+
 // edgeOp reads one edge operator and its label.
 func (p *chainParser) edgeOp() (*edge, bool) {
 	r := p.rest()
 	if m := edgeID.FindString(r); m != "" && len(r) > len(m) && strings.ContainsRune("-=~<ox", rune(r[len(m)])) {
+		p.g.edgeIDs[m[:len(m)-1]] = true
 		p.i += len(m)
 		r = p.rest()
 	}

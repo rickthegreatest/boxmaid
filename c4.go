@@ -43,13 +43,14 @@ func parseC4(src string) (*graph, string, error) {
 		}
 		lower := strings.ToLower(fn)
 		switch {
-		case strings.HasSuffix(lower, "boundary"):
+		case strings.HasSuffix(lower, "boundary") || isDeploymentNode(lower):
 			t := arg(1)
 			if kind := arg(2); kind != "" {
 				t += " [" + kind + "]"
 			}
 			c := g.addCluster(arg(0), t, cur)
 			stack = append(stack, c)
+			continue
 		case strings.HasPrefix(lower, "rel") || strings.HasPrefix(lower, "birel"):
 			e := &edge{from: arg(0), to: arg(1), head: headArrow}
 			if strings.HasPrefix(lower, "birel") {
@@ -94,12 +95,26 @@ func parseC4(src string) (*graph, string, error) {
 				n.shape = shapeRound
 			}
 		}
+		if m[3] == "{" {
+			// Something else opening a block: keep the braces balanced.
+			stack = append(stack, cur)
+		}
 	}
 	g.finish()
 	if len(g.nodes) == 0 {
 		return nil, title, ErrEmpty
 	}
 	return g, title, nil
+}
+
+// isDeploymentNode says whether a call is a deployment node, which frames
+// what it contains like a boundary does.
+func isDeploymentNode(lower string) bool {
+	switch lower {
+	case "deployment_node", "deployment_node_l", "deployment_node_r", "node", "node_l", "node_r":
+		return true
+	}
+	return false
 }
 
 // c4Args splits call arguments at commas outside quotes, dropping quotes

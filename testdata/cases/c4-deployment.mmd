@@ -1,0 +1,15 @@
+C4Deployment
+    title Deployment for the shop
+    Deployment_Node(cloud, "Cloud", "AWS") {
+        Deployment_Node(region, "eu-west-1", "Region") {
+            Container(api, "API", "Go", "Serves the shop")
+            ContainerDb(db, "Database", "Postgres", "Orders and stock")
+        }
+        Node(cdn, "CDN", "CloudFront") {
+            Container(web, "Web app", "React", "The storefront")
+        }
+    }
+    Person(shopper, "Shopper", "Buys things")
+    Rel(shopper, web, "Uses", "HTTPS")
+    Rel(web, api, "Calls", "JSON")
+    Rel(api, db, "Reads and writes", "SQL")

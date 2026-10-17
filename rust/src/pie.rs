@@ -1,0 +1,89 @@
+//! Pie charts, drawn as horizontal bars, largest first.
+
+use crate::canvas::Canvas;
+use crate::entities::format_number;
+use crate::re::lazy_re;
+use crate::text::width;
+use crate::{Drawn, Error, Options, Role};
+
+lazy_re!(PIE_SLICE, r#"^"([^"]*)"\s*:\s*([0-9.]+)\s*$"#);
+
+pub(crate) fn render(body: &str, _rest: &str, opt: &Options) -> Drawn {
+    let mut slices: Vec<(String, f64)> = vec![];
+    let mut title = String::new();
+    let mut show_data = false;
+    let mut total = 0.0;
+    for (i, raw) in body.split('\n').enumerate() {
+        let mut line = raw.trim();
+        if i == 0 || line.starts_with("pie") {
+            line = line.strip_prefix("pie").unwrap_or(line).trim();
+            if let Some(l) = line.strip_prefix("showData") {
+                show_data = true;
+                line = l.trim();
+            }
+        }
+        if let Some(t) = line.strip_prefix("title") {
+            title = t.trim().to_string();
+            continue;
+        }
+        if let Some(m) = PIE_SLICE.captures(line) {
+            if let Ok(v) = m[2].parse::<f64>() {
+                if v > 0.0 {
+                    slices.push((m[1].to_string(), v));
+                    total += v;
+                }
+            }
+        }
+    }
+    if slices.is_empty() {
+        return Err(Error::Empty);
+    }
+    // Largest first, keeping the order of equal slices.
+    slices.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+    let name_w = slices.iter().map(|s| width(&s.0).min(30)).max().unwrap_or(0).max(0);
+    let mut bar_w = 40i64;
+    if opt.width > 0 {
+        bar_w = (opt.width as i64 - name_w - 20).clamp(10, 40);
+    }
+    let mut cv = Canvas::new(name_w + bar_w + 24, slices.len() as i64, opt.ascii);
+    for (i, (name, v)) in slices.iter().enumerate() {
+        let y = i as i64;
+        let mut name = name.clone();
+        if width(&name) > name_w {
+            name = go_bytes(&name.as_bytes()[..(name_w - 1) as usize]) + "…";
+        }
+        cv.text(0, y, &name, Role::NodeText, "", false);
+        let frac = v / total;
+        let n = (frac * bar_w as f64 + 0.5) as i64;
+        let bar = if opt.ascii { "#" } else { "█" }.repeat(n as usize);
+        cv.text(name_w + 2, y, &bar, Role::Bar, "", false);
+        let mut info = format!("{:.1}%", frac * 100.0);
+        if show_data {
+            info += &format!("  ({})", format_number(*v));
+        }
+        cv.text(name_w + 3 + n, y, &info, Role::Muted, "", false);
+    }
+    Ok((cv.picture(), title))
+}
+
+/// Bytes as Go would read them as a string: each byte of a broken UTF-8
+/// sequence becomes U+FFFD.
+fn go_bytes(b: &[u8]) -> String {
+    let mut out = String::new();
+    let mut rest = b;
+    while !rest.is_empty() {
+        match std::str::from_utf8(rest) {
+            Ok(s) => {
+                out.push_str(s);
+                break;
+            }
+            Err(e) => {
+                let ok = e.valid_up_to();
+                out.push_str(std::str::from_utf8(&rest[..ok]).unwrap());
+                out.push('\u{FFFD}');
+                rest = &rest[ok + 1..];
+            }
+        }
+    }
+    out
+}
