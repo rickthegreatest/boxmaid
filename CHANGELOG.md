@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1 — 2026-10-18
+
+- Correct the Go module path and best-effort fitting description in Rust's generated API documentation.
+- Build docs.rs documentation with all features, including the Ratatui widget.
+- Link the published packages, showcase website, and launch discussion from the project documentation.
+- Align Go CLI, TUI dependency, and Rust package versions for the patch release.
+
 ## 0.1.0 — 2026-10-18
 
 First release of the Go module (`github.com/rickthegreatest/boxmaid`, plus `/tui` for Bubble Tea) and the Rust crate (`boxmaid`, with an optional `ratatui` feature).

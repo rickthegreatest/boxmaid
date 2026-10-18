@@ -23,6 +23,12 @@ printf 'flowchart LR\n  A[Source] --> B[Layout] --> C[Text]\n' | boxmaid
 
 Or choose a [release binary](https://github.com/rickthegreatest/boxmaid/releases/tag/v0.1.0) for Linux, macOS, or Windows. Archives include an MIT license and README; `SHA256SUMS` contains download checksums.
 
+The Rust CLI and library are also published on [crates.io](https://crates.io/crates/boxmaid):
+
+```sh
+cargo install boxmaid --version 0.1.0 --locked
+```
+
 For reproducible agent/CI previews:
 
 ```sh
@@ -35,6 +41,7 @@ boxmaid -w 80 -color never -require-fit diagram.mmd
 - [Quick start and APIs](https://github.com/rickthegreatest/boxmaid#readme)
 - [Agent integration guide](https://github.com/rickthegreatest/boxmaid/blob/main/docs/agents.md)
 - [Architecture and implementation](https://github.com/rickthegreatest/boxmaid/blob/main/docs/architecture.md)
+- [Rust API documentation](https://docs.rs/boxmaid)
 - [Changelog](https://github.com/rickthegreatest/boxmaid/blob/main/CHANGELOG.md)
 
 ## How can I help?

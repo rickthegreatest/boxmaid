@@ -17,7 +17,7 @@ import (
 )
 
 // Overridden by release builds with -ldflags '-X main.version=…'.
-var version = "0.1.0"
+var version = "0.1.1"
 
 type terminal struct {
 	input, output bool

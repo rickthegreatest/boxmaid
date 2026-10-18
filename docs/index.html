@@ -46,6 +46,8 @@
       <h2 id="install-title">How do I start?</h2>
       <p>Install the Go CLI, or grab a <a href="https://github.com/rickthegreatest/boxmaid/releases/latest">prebuilt binary</a> for Linux, macOS, or Windows.</p>
       <div class="command"><pre><code id="install-command">go install github.com/rickthegreatest/boxmaid/cmd/boxmaid@latest</code></pre><button type="button" data-copy="install-command">Copy</button></div>
+      <p>Prefer Rust? Install the same CLI from <a href="https://crates.io/crates/boxmaid">crates.io</a>:</p>
+      <div class="command"><pre><code id="rust-install-command">cargo install boxmaid --locked</code></pre><button type="button" data-copy="rust-install-command">Copy</button></div>
       <div class="command"><pre><code id="render-command">boxmaid -w 80 -color never -require-fit diagram.mmd</code></pre><button type="button" data-copy="render-command">Copy</button></div>
       <p class="detail">Go CLI: Go 1.22+ · Bubble Tea module: Go 1.24+ · Rust: 1.88+</p>
       <p>Want to embed it? Start with the <a href="https://github.com/rickthegreatest/boxmaid#how-do-i-use-the-go-library">Go API</a> or <a href="https://github.com/rickthegreatest/boxmaid#how-do-i-use-the-rust-crate">Rust API</a>.</p>
@@ -61,7 +63,7 @@
     </section>
     <aside class="limits"><strong>What should I know?</strong> Boxmaid renders a selective subset of Mermaid. Some charts use terminal-friendly bars or lists, and unsupported statements may be skipped. Check the <a href="https://github.com/rickthegreatest/boxmaid/blob/main/docs/syntax.md">syntax reference</a> when fidelity matters.</aside>
   </main>
-  <footer class="wrap"><span>boxmaid · MIT</span><a href="https://github.com/rickthegreatest/boxmaid/issues">Share a diagram or report an issue ↗</a></footer>
+  <footer class="wrap"><span>boxmaid · MIT</span><a href="https://github.com/rickthegreatest/boxmaid/discussions/1">Join the launch discussion ↗</a><a href="https://github.com/rickthegreatest/boxmaid/issues">Report an issue ↗</a></footer>
   <span class="sr-only" id="copy-status" role="status" aria-live="polite"></span>
   <script>
     document.querySelectorAll('[data-copy]').forEach(button => {

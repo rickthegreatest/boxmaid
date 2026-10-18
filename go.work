@@ -5,5 +5,5 @@ use (
 	./tui
 )
 
-// Resolve the release dependency locally before the first tag exists.
-replace github.com/rickthegreatest/boxmaid v0.1.0 => .
+// Resolve the release dependency to this local workspace.
+replace github.com/rickthegreatest/boxmaid v0.1.1 => .

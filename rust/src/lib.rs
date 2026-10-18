@@ -1,7 +1,6 @@
 //! boxmaid draws [Mermaid](https://mermaid.js.org) diagrams for the
 //! terminal: boxes, lines and charts from Unicode box drawing (or plain
-//! ASCII), laid out so edges don't run through nodes or each other, and
-//! sized to fit the width you have.
+//! ASCII), with layered layout and best-effort width fitting.
 //!
 //! ```
 //! let pic = boxmaid::render("flowchart LR\n  A --> B", &boxmaid::Options::default()).unwrap();
@@ -13,7 +12,7 @@
 //! (node border, edge, label…) so a TUI can colour it with its own theme.
 //! With the `ratatui` feature, a picture is also a ratatui widget.
 //!
-//! The Go module `github.com/boxmaid/boxmaid` produces the same output for
+//! The Go module `github.com/rickthegreatest/boxmaid` produces the same output for
 //! the same input: both are checked against one shared set of golden files.
 
 #![forbid(unsafe_code)]

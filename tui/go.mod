@@ -3,7 +3,7 @@ module github.com/rickthegreatest/boxmaid/tui
 go 1.24.0
 
 require (
-	github.com/rickthegreatest/boxmaid v0.1.0
+	github.com/rickthegreatest/boxmaid v0.1.1
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/charmbracelet/x/ansi v0.10.1

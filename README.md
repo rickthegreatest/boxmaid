@@ -4,11 +4,13 @@
 
 ![Boxmaid renders Mermaid source through native layout to terminal text, with Go and Rust support.](docs/assets/hero.svg)
 
-[Quick start](#how-do-i-try-it) · [Go](#how-do-i-use-the-go-library) · [Rust](#how-do-i-use-the-rust-crate) · [Agent guide](docs/agents.md) · [Syntax coverage](docs/syntax.md) · [Architecture](docs/architecture.md)
+[Website](https://rickthegreatest.github.io/boxmaid/) · [Quick start](#how-do-i-try-it) · [Go](#how-do-i-use-the-go-library) · [Rust](#how-do-i-use-the-rust-crate) · [Agent guide](docs/agents.md) · [Syntax coverage](docs/syntax.md) · [Architecture](docs/architecture.md)
 
 [![CI](https://github.com/rickthegreatest/boxmaid/actions/workflows/ci.yml/badge.svg)](https://github.com/rickthegreatest/boxmaid/actions/workflows/ci.yml)
 [![GitHub release](https://img.shields.io/github/v/release/rickthegreatest/boxmaid)](https://github.com/rickthegreatest/boxmaid/releases/latest)
 [![Go Reference](https://pkg.go.dev/badge/github.com/rickthegreatest/boxmaid.svg)](https://pkg.go.dev/github.com/rickthegreatest/boxmaid)
+[![crates.io](https://img.shields.io/crates/v/boxmaid.svg)](https://crates.io/crates/boxmaid)
+[![Rust docs](https://docs.rs/boxmaid/badge.svg)](https://docs.rs/boxmaid)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## What does it do?
@@ -31,11 +33,13 @@ Install the Go CLI:
 go install github.com/rickthegreatest/boxmaid/cmd/boxmaid@latest
 ```
 
-Or download a [prebuilt binary](https://github.com/rickthegreatest/boxmaid/releases/latest) for Linux, macOS, or Windows. To build the Rust CLI directly from the release:
+Or install the Rust CLI:
 
 ```sh
-cargo install --git https://github.com/rickthegreatest/boxmaid --tag v0.1.0 --locked boxmaid
+cargo install boxmaid --locked
 ```
+
+You can also download a [prebuilt binary](https://github.com/rickthegreatest/boxmaid/releases/latest) for Linux, macOS, or Windows.
 
 From a checkout, use `go run ./cmd/boxmaid docs/examples/pipeline.mmd` or `cargo run --manifest-path rust/Cargo.toml -- docs/examples/pipeline.mmd`.
 

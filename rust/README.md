@@ -18,7 +18,7 @@ Enable the `ratatui` feature and render `&Picture` as a widget, or use `Diagram:
 
 ## Can I use a CLI or transform Markdown?
 
-Install the Rust CLI from the release with `cargo install --git https://github.com/rickthegreatest/boxmaid --tag v0.1.0 --locked boxmaid`. Use `boxmaid -w 80 -color never -require-fit diagram.mmd` for predictable output. `replace_mermaid` transforms fenced Mermaid blocks into text; `live_url` constructs a browser fallback URL without making a network request.
+Install the Rust CLI with `cargo install boxmaid --locked`. Use `boxmaid -w 80 -color never -require-fit diagram.mmd` for predictable output. `replace_mermaid` transforms fenced Mermaid blocks into text; `live_url` constructs a browser fallback URL without making a network request.
 
 ## What are the compatibility limits?
 
