@@ -1,0 +1,23 @@
+# Boxmaid
+
+> Native Go and Rust libraries and CLIs that render a documented subset of Mermaid as Unicode/ASCII terminal text, with Bubble Tea and Ratatui adapters.
+
+## Which documentation should I read?
+
+- [Overview and quick start](https://github.com/rickthegreatest/boxmaid/blob/main/README.md)
+- [Agent integration and command contracts](https://github.com/rickthegreatest/boxmaid/blob/main/docs/agents.md)
+- [Exact syntax coverage and omissions](https://github.com/rickthegreatest/boxmaid/blob/main/docs/syntax.md)
+- [Architecture and invariants](https://github.com/rickthegreatest/boxmaid/blob/main/docs/architecture.md)
+- [Repository agent instructions](https://github.com/rickthegreatest/boxmaid/blob/main/AGENTS.md)
+- [Development checks](https://github.com/rickthegreatest/boxmaid/blob/main/CONTRIBUTING.md)
+- [Release procedure](https://github.com/rickthegreatest/boxmaid/blob/main/docs/releasing.md)
+
+## Which facts must integrations preserve?
+
+- Use `boxmaid -w 80 -color never -require-fit diagram.mmd` for deterministic, bounded CLI previews.
+- Exit codes: 0 success, 1 render/output failure, 2 usage/input failure, 3 strict-fit failure.
+- Unknown statements may be skipped; successful rendering is not complete Mermaid validation.
+- Library width zero means unlimited. CLI zero uses terminal width when interactive, unlimited when piped.
+- Titles are metadata outside the Picture cell grid.
+- Go core has no third-party dependencies; Rust core uses regex. TUI dependencies are optional/separate.
+- Go import: github.com/rickthegreatest/boxmaid. Bubble Tea: github.com/rickthegreatest/boxmaid/tui. Rust crate: boxmaid.

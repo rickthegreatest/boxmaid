@@ -1,0 +1,10 @@
+classDiagram
+  class Renderer {
+    +render(source, options) Picture
+  }
+  class Picture {
+    +cells
+    +width
+    +height
+  }
+  Renderer --> Picture : produces

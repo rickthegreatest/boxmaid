@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Boxmaid — Mermaid diagrams for the terminal, in Go and Rust</title>
+  <meta name="description" content="Render Mermaid diagrams as Unicode or ASCII terminal text. Native Go and Rust libraries, a CLI, and Bubble Tea and Ratatui integrations. No browser required.">
+  <link rel="canonical" href="https://rickthegreatest.github.io/boxmaid/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Boxmaid — Mermaid in. Terminal text out.">
+  <meta property="og:description" content="22 diagram families. Go and Rust. Unicode and ASCII. Ready for your CLI, TUI, and agent tools.">
+  <meta property="og:url" content="https://rickthegreatest.github.io/boxmaid/">
+  <meta property="og:image" content="https://rickthegreatest.github.io/boxmaid/assets/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0b1220">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <header class="nav wrap">
+    <a class="brand" href="./" aria-label="Boxmaid home">boxmaid<span aria-hidden="true">▍</span></a>
+    <nav aria-label="Main navigation">
+      <a href="https://github.com/rickthegreatest/boxmaid#readme">Docs</a>
+      <a href="https://github.com/rickthegreatest/boxmaid/blob/main/docs/agents.md">For agents</a>
+      <a href="https://github.com/rickthegreatest/boxmaid">GitHub ↗</a>
+    </nav>
+  </header>
+  <main class="wrap">
+    <section class="intro" aria-labelledby="title">
+      <p class="eyebrow">GO + RUST · TERMINAL-NATIVE DIAGRAMS</p>
+      <h1 id="title">Mermaid in.<br><span>Terminal text out.</span></h1>
+      <p class="lede">Bring diagrams into the tools you already live in.<br class="wide-only"> Render Mermaid as real text in your CLI, TUI, docs, or agent workflow.</p>
+      <div class="actions">
+        <a class="button primary" href="#install">Get started</a>
+        <a class="button" href="https://github.com/rickthegreatest/boxmaid">Explore the source ↗</a>
+      </div>
+      <p class="detail">Open source · MIT licensed · No browser or JavaScript runtime required</p>
+      <img class="hero" src="assets/hero.svg" width="1200" height="518" alt="Boxmaid renders a Mermaid source node through native layout into terminal text, using Unicode boxes and arrows.">
+    </section>
+    <section class="features" aria-label="Capabilities">
+      <article><p class="number">22</p><h2>Which diagrams can I draw?</h2><p>Flowcharts, sequences, classes, ER, C4, Gantt, and more. Each family has <a href="https://github.com/rickthegreatest/boxmaid/blob/main/docs/syntax.md">documented syntax coverage</a>.</p></article>
+      <article><p class="number">2</p><h2>Which language can I use?</h2><p>Native Go and Rust libraries, checked against shared output fixtures. Embed semantic cells directly in Bubble Tea or Ratatui.</p></article>
+      <article><p class="number">80</p><h2>Will it fit my terminal?</h2><p>Choose a column budget. Boxmaid tries wrapping and alternate layouts. Strict-fit mode tells you when a drawing needs more room.</p></article>
+    </section>
+    <section class="section" id="install" aria-labelledby="install-title">
+      <p class="eyebrow">A SMALL TOOL THAT GOES WHERE YOU WORK</p>
+      <h2 id="install-title">How do I start?</h2>
+      <p>Install the Go CLI, or grab a <a href="https://github.com/rickthegreatest/boxmaid/releases/latest">prebuilt binary</a> for Linux, macOS, or Windows.</p>
+      <div class="command"><pre><code id="install-command">go install github.com/rickthegreatest/boxmaid/cmd/boxmaid@latest</code></pre><button type="button" data-copy="install-command">Copy</button></div>
+      <div class="command"><pre><code id="render-command">boxmaid -w 80 -color never -require-fit diagram.mmd</code></pre><button type="button" data-copy="render-command">Copy</button></div>
+      <p class="detail">Go CLI: Go 1.22+ · Bubble Tea module: Go 1.24+ · Rust: 1.88+</p>
+      <p>Want to embed it? Start with the <a href="https://github.com/rickthegreatest/boxmaid#how-do-i-use-the-go-library">Go API</a> or <a href="https://github.com/rickthegreatest/boxmaid#how-do-i-use-the-rust-crate">Rust API</a>.</p>
+    </section>
+    <section class="section" aria-labelledby="examples-title">
+      <h2 id="examples-title">What does the output look like?</h2>
+      <p>These are real drawings generated from the <a href="https://github.com/rickthegreatest/boxmaid/tree/main/docs/examples">Mermaid examples in the repository</a>, presented with a high-contrast theme.</p>
+      <img class="gallery" src="assets/gallery.svg" width="1200" height="716" loading="lazy" alt="A CLI and renderer exchange messages in a sequence diagram; a class diagram shows Renderer producing Picture with cells, width, and height.">
+    </section>
+    <section class="section bottom" aria-labelledby="agents-title">
+      <div><p class="eyebrow">BUILT TO BE EMBEDDED</p><h2 id="agents-title">Using an agent or building a TUI?</h2><p>Explicit widths, predictable exit codes, semantic cell styling, and browser fallback links. Read the integration contracts and keep the original Mermaid source.</p></div>
+      <div class="actions"><a class="button" href="https://github.com/rickthegreatest/boxmaid/blob/main/docs/agents.md">Agent guide ↗</a><a class="button" href="https://github.com/rickthegreatest/boxmaid/blob/main/docs/architecture.md">Architecture ↗</a></div>
+    </section>
+    <aside class="limits"><strong>What should I know?</strong> Boxmaid renders a selective subset of Mermaid. Some charts use terminal-friendly bars or lists, and unsupported statements may be skipped. Check the <a href="https://github.com/rickthegreatest/boxmaid/blob/main/docs/syntax.md">syntax reference</a> when fidelity matters.</aside>
+  </main>
+  <footer class="wrap"><span>boxmaid · MIT</span><a href="https://github.com/rickthegreatest/boxmaid/issues">Share a diagram or report an issue ↗</a></footer>
+  <span class="sr-only" id="copy-status" role="status" aria-live="polite"></span>
+  <script>
+    document.querySelectorAll('[data-copy]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const source = document.getElementById(button.dataset.copy);
+        try {
+          await navigator.clipboard.writeText(source.textContent);
+          button.textContent = 'Copied';
+          document.getElementById('copy-status').textContent = 'Command copied to clipboard.';
+          setTimeout(() => { button.textContent = 'Copy'; }, 1800);
+        } catch {
+          const range = document.createRange();
+          range.selectNodeContents(source);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          document.getElementById('copy-status').textContent = 'Command selected. Copy it with your keyboard.';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

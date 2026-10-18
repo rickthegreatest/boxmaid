@@ -116,11 +116,19 @@ impl Graph {
             self.order.push(id.to_string());
             self.cl[c].nodes.push(id.to_string());
         } else if self.nodes[id].cluster == ROOT && c != ROOT {
-            self.cl[ROOT].nodes.retain(|x| x != id);
+            self.move_node(id, c);
+        }
+        self.nodes.get_mut(id).unwrap()
+    }
+
+    /// Keeps both sides of membership in sync, including redeclarations.
+    pub fn move_node(&mut self, id: &str, c: usize) {
+        let old = self.nodes[id].cluster;
+        if old != c {
+            self.cl[old].nodes.retain(|x| x != id);
             self.nodes.get_mut(id).unwrap().cluster = c;
             self.cl[c].nodes.push(id.to_string());
         }
-        self.nodes.get_mut(id).unwrap()
     }
 
     pub fn add_cluster(&mut self, id: &str, title: &str, parent: usize) -> usize {

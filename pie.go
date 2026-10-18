@@ -2,7 +2,9 @@ package boxmaid
 
 import (
 	"fmt"
+	"math"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -18,7 +20,6 @@ func renderPie(src string, opt Options) (*Picture, string, error) {
 	var slices []slice
 	title := ""
 	showData := false
-	total := 0.0
 	for i, raw := range strings.Split(src, "\n") {
 		line := strings.TrimSpace(raw)
 		if i == 0 || strings.HasPrefix(line, "pie") {
@@ -34,19 +35,19 @@ func renderPie(src string, opt Options) (*Picture, string, error) {
 		}
 		if m := pieSlice.FindStringSubmatch(line); m != nil {
 			v, err := strconv.ParseFloat(m[2], 64)
-			if err == nil && v > 0 {
+			if err == nil && v > 0 && !math.IsInf(v, 0) {
 				slices = append(slices, slice{m[1], v})
-				total += v
 			}
 		}
 	}
 	if len(slices) == 0 {
 		return nil, title, ErrEmpty
 	}
-	for i := 1; i < len(slices); i++ {
-		for j := i; j > 0 && slices[j].v > slices[j-1].v; j-- {
-			slices[j], slices[j-1] = slices[j-1], slices[j]
-		}
+	sort.SliceStable(slices, func(i, j int) bool { return slices[i].v > slices[j].v })
+	// Scale before summing so several finite values cannot overflow the total.
+	total := 0.0
+	for _, s := range slices {
+		total += s.v / slices[0].v
 	}
 	nameW := 0
 	for _, s := range slices {
@@ -60,10 +61,10 @@ func renderPie(src string, opt Options) (*Picture, string, error) {
 	for i, s := range slices {
 		name := s.name
 		if width(name) > nameW {
-			name = name[:nameW-1] + "…"
+			name = truncate(name, nameW-1) + "…"
 		}
 		cv.text(0, i, name, RoleNodeText, "", false)
-		frac := s.v / total
+		frac := (s.v / slices[0].v) / total
 		n := int(frac*float64(barW) + 0.5)
 		bar := strings.Repeat("█", n)
 		if opt.ASCII {

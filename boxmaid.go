@@ -1,6 +1,6 @@
 // Package boxmaid draws Mermaid diagrams for the terminal: boxes, lines and
-// charts from Unicode box drawing (or plain ASCII), laid out so edges don't
-// run through nodes or each other, and sized to fit the width you have.
+// charts from Unicode box drawing (or plain ASCII), with layered layout
+// and best-effort width fitting.
 //
 //	pic, err := boxmaid.Render(src, boxmaid.Options{Width: 100})
 //	fmt.Println(pic)                          // plain text
@@ -21,13 +21,15 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"unicode/utf8"
 )
 
 // Options shape the drawing.
 type Options struct {
 	// Width is the room available, in columns. Render picks the layout
 	// that fits: it wraps labels tighter and turns a wide left-to-right
-	// flowchart top to bottom. 0 means unlimited.
+	// flowchart top to bottom. 0 means unlimited. If nothing fits, Render
+	// returns the narrowest attempt; compare Picture.W with Width.
 	Width int
 	// ASCII draws with plain ASCII characters only.
 	ASCII bool
@@ -87,6 +89,10 @@ func (e *UnsupportedError) Error() string {
 
 // ErrEmpty is returned for a diagram with nothing in it.
 var ErrEmpty = errors.New("the diagram is empty")
+
+// ErrInvalidUTF8 is returned when Mermaid source contains malformed UTF-8.
+// Rust's &str input enforces the same encoding constraint in its type system.
+var ErrInvalidUTF8 = errors.New("source is not valid UTF-8")
 
 // renderer draws one kind of diagram. body is the whole source (front
 // matter removed), rest what follows the header line. It returns the
@@ -155,6 +161,9 @@ func init() {
 
 // Render parses and draws a diagram.
 func Render(src string, opt Options) (*Picture, error) {
+	if !utf8.ValidString(src) {
+		return nil, ErrInvalidUTF8
+	}
 	body, title := Clean(src)
 	header, rest := detect(body)
 	if header == "" {

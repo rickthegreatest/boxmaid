@@ -155,6 +155,16 @@ impl Theme {
     pub fn style(&self, r: Role) -> Style {
         self.styles.get(&r).cloned().unwrap_or_default()
     }
+
+    /// Resolves a cell's role, explicit colour and emphasis for output adapters.
+    pub fn cell_style(&self, c: &crate::Cell) -> Style {
+        let mut st = self.style(c.role);
+        if !c.color.is_empty() && self.true_color {
+            st.color = c.color.clone();
+        }
+        st.bold |= c.bold;
+        st
+    }
 }
 
 fn is_hex_color(c: &str) -> bool {
@@ -172,7 +182,7 @@ fn sgr(st: &Style, true_color: bool) -> String {
         let p = |i: usize| u8::from_str_radix(&c[i..i + 2], 16).unwrap_or(0);
         codes.push(format!("38;2;{};{};{}", p(1), p(3), p(5)));
     } else if !c.is_empty() && !c.starts_with('#') {
-        if let Ok(n) = c.parse::<i64>() {
+        if let Ok(n) = c.parse::<u8>() {
             codes.push(if n < 8 {
                 (30 + n).to_string()
             } else if n < 16 {
@@ -203,13 +213,7 @@ impl Picture {
                 if c.wide {
                     continue;
                 }
-                let mut st = t.style(c.role);
-                if !c.color.is_empty() && t.true_color {
-                    st.color = c.color.clone();
-                }
-                if c.bold {
-                    st.bold = true;
-                }
+                let st = t.cell_style(c);
                 let code = if c.s != " " { sgr(&st, t.true_color) } else { String::new() };
                 if code != cur {
                     if !cur.is_empty() {

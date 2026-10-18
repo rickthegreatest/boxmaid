@@ -63,6 +63,17 @@ var Themes = map[string]Theme{"default": DefaultTheme, "mono": MonoTheme, "dracu
 
 var hexColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 
+// CellStyle resolves a cell's role, explicit colour and emphasis. Output
+// adapters should use this to keep the same precedence as ANSI rendering.
+func (t Theme) CellStyle(c Cell) Style {
+	st := t.Styles[c.Role]
+	if c.Color != "" && t.TrueColor {
+		st.Color = c.Color
+	}
+	st.Bold = st.Bold || c.Bold
+	return st
+}
+
 // sgr is the escape sequence that switches to st ("" for none).
 func sgr(st Style, trueColor bool) string {
 	var codes []string
@@ -78,7 +89,7 @@ func sgr(st Style, trueColor bool) string {
 	case c != "" && !strings.HasPrefix(c, "#"):
 		n, err := strconv.Atoi(c)
 		switch {
-		case err != nil:
+		case err != nil || n < 0 || n > 255:
 		case n < 8:
 			codes = append(codes, strconv.Itoa(30+n))
 		case n < 16:
@@ -107,13 +118,7 @@ func (p *Picture) ANSI(t Theme) string {
 			if c.wide {
 				continue
 			}
-			st := t.Styles[c.Role]
-			if c.Color != "" && t.TrueColor {
-				st.Color = c.Color
-			}
-			if c.Bold {
-				st.Bold = true
-			}
+			st := t.CellStyle(c)
 			code := ""
 			if c.S != " " {
 				code = sgr(st, t.TrueColor)

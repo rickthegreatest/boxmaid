@@ -1,0 +1,85 @@
+name: Release binaries
+
+on:
+  push:
+    tags: ["v[0-9]*"]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+          cache-dependency-path: tui/go.sum
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Check tag and manifest versions
+        env:
+          TAG: ${{ github.ref_name }}
+        run: python3 scripts/check-release.py "$TAG"
+      - run: go vet ./... ./tui/...
+      - run: go test -race ./... ./tui/...
+      - run: cargo fmt --manifest-path rust/Cargo.toml --check
+      - run: cargo clippy --locked --manifest-path rust/Cargo.toml --all-targets --all-features -- -D warnings
+      - run: cargo test --locked --manifest-path rust/Cargo.toml --all-features
+      - run: cargo package --locked --manifest-path rust/Cargo.toml
+      - run: go run ./internal/artwork -check
+      - run: go build -o "${{ runner.temp }}/boxmaid-go" ./cmd/boxmaid
+      - run: cargo build --locked --manifest-path rust/Cargo.toml
+      - run: python3 scripts/check-parity.py --go "${{ runner.temp }}/boxmaid-go" --rust rust/target/debug/boxmaid
+
+  build:
+    needs: verify
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+          cache: false
+      - name: Build reproducible CLI
+        env:
+          CGO_ENABLED: "0"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          suffix=""
+          if [ "$GOOS" = windows ]; then suffix=".exe"; fi
+          mkdir -p dist
+          go build -trimpath -ldflags "-s -w -buildid= -X main.version=${TAG#v}" -o "dist/boxmaid${suffix}" ./cmd/boxmaid
+          cp LICENSE README.md dist/
+          tar -czf "boxmaid_${TAG#v}_${GOOS}_${GOARCH}.tar.gz" -C dist .
+      - uses: actions/upload-artifact@v7
+        with:
+          name: boxmaid-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: boxmaid_*.tar.gz
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          merge-multiple: true
+      - name: Publish release with checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          sha256sum boxmaid_*.tar.gz > SHA256SUMS
+          gh release create "$TAG" boxmaid_*.tar.gz SHA256SUMS --verify-tag --generate-notes --title "Boxmaid $TAG"

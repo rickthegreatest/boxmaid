@@ -198,6 +198,7 @@ Headers: `architecture-beta`, `architecture`.
 
 - `group id(icon)[Title]` and `group id[Title] in parent`. Groups are drawn as frames.
 - `service id(icon)[Title]` and `service … in group`. The icon name is shown above the title. `database` services are drawn as cylinders without the icon name. `internet` and `cloud` services are rounded.
+- Redeclaring a group updates its title and parent without duplicating the frame. Redeclaring a service updates its label and membership; it belongs to one group at a time.
 - `junction id`, optionally `in group`, is drawn as a dot.
 - Edges: `a:R -- L:b`, `a:R --> L:b`, `a:R <-- L:b` and `a:R <--> L:b`. The `{group}` modifier is accepted.
 - The diagram is laid out left to right when more edges join left and right sides than top and bottom sides, and top to bottom otherwise.

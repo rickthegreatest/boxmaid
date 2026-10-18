@@ -68,7 +68,8 @@ pub use width::{rune_width, string_width};
 pub struct Options {
     /// The room available, in columns. Rendering picks the layout that
     /// fits: it wraps labels tighter and turns a wide left-to-right
-    /// flowchart top to bottom. 0 means unlimited.
+    /// flowchart top to bottom. 0 means unlimited. If nothing fits, rendering
+    /// returns the narrowest attempt; compare [`Picture::w`] with this width.
     pub width: usize,
     /// Draw with plain ASCII characters only.
     pub ascii: bool,

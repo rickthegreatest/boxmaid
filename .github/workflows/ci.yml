@@ -4,74 +4,104 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   go:
-    runs-on: ubuntu-latest
+    name: Go / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
-      - run: test -z "$(gofmt -l .)"
+          cache-dependency-path: tui/go.sum
       - run: go vet ./... ./tui/...
+      - run: go test -race ./... ./tui/...
+
+  go-minimum:
+    name: Go core / minimum version
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: "off"
+      GOTOOLCHAIN: local
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "1.22.x"
+          cache: false
       - run: go test ./...
-      - run: cd tui && go test ./...
-      - name: Goldens are up to date
-        run: |
-          go test -run Golden -update
-          git diff --exit-code testdata/
+
+  go-tui-minimum:
+    name: Go workspace / minimum version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "1.24.x"
+          cache-dependency-path: tui/go.sum
+      - run: go test ./... ./tui/...
 
   rust:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: rust
+    name: Rust / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
       - run: cargo fmt --check
-      - run: cargo clippy --all-targets --all-features -- -D warnings
-      - name: Tests (shared goldens, byte for byte)
-        run: cargo test --all-features
-
-  msrv:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
         working-directory: rust
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.82
-      - run: cargo test
+      - run: cargo clippy --locked --all-targets --all-features -- -D warnings
+        working-directory: rust
+      - run: cargo test --locked --all-features
+        working-directory: rust
+      - run: cargo package --locked
+        working-directory: rust
 
-  parity:
-    name: Go and Rust CLIs agree
+  rust-minimum:
+    name: Rust / minimum version
     runs-on: ubuntu-latest
-    needs: [go, rust]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.88
+      - run: cargo test --locked --all-features
+        working-directory: rust
+
+  contracts:
+    name: Output parity, generated assets, formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
+          cache-dependency-path: tui/go.sum
       - uses: dtolnay/rust-toolchain@stable
-      - run: go build -o /tmp/bm-go ./cmd/boxmaid
-      - run: cargo build --release --manifest-path rust/Cargo.toml
-      - name: Compare at several widths
+      - name: Check Go formatting
+        run: test -z "$(gofmt -l .)"
+      - name: Check golden files
         run: |
-          fail=0
-          for f in testdata/cases/*.mmd; do
-            for w in 120 60 30; do
-              for a in "" "-ascii"; do
-                g=$(/tmp/bm-go -w $w $a -color never "$f" 2>&1)
-                r=$(rust/target/release/boxmaid -w $w $a -color never "$f" 2>&1)
-                if [ "$g" != "$r" ]; then echo "differs: $f -w $w $a"; fail=1; fi
-              done
-            done
-          done
-          exit $fail
+          go test -run Golden -update
+          git diff --exit-code -- testdata/
+      - run: go run ./internal/artwork -check
+      - run: go build -o "${{ runner.temp }}/boxmaid-go" ./cmd/boxmaid
+      - run: cargo build --locked --manifest-path rust/Cargo.toml
+      - run: python3 scripts/check-parity.py --go "${{ runner.temp }}/boxmaid-go" --rust rust/target/debug/boxmaid

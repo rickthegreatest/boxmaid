@@ -1,0 +1,6 @@
+sequenceDiagram
+  participant CLI
+  participant Renderer
+  CLI->>Renderer: Mermaid + column budget
+  Renderer-->>CLI: Styled cells
+  Note over CLI,Renderer: No browser required

@@ -364,10 +364,9 @@ impl<'a> ChainParser<'a> {
             self.i += 3;
             let cs = self.i;
             while self.i < self.s.len() {
-                let b = self.byte();
-                let ch = b as char; // like Go's rune(byte)
-                if ch.is_alphabetic() || ch.is_numeric() || b == b'_' || b == b'-' {
-                    self.i += 1;
+                let Some(ch) = self.rest().chars().next() else { break };
+                if ch.is_alphabetic() || ch.is_numeric() || ch == '_' || ch == '-' {
+                    self.i += ch.len_utf8();
                 } else {
                     break;
                 }

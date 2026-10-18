@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 var (
@@ -322,7 +323,7 @@ func (p *chainParser) nodeRef() string {
 		}
 		if r >= 0x80 {
 			// Multi-byte: part of an identifier.
-			_, size := decodeRune(p.s[p.i:])
+			_, size := utf8.DecodeRuneInString(p.s[p.i:])
 			p.i += size
 			continue
 		}
@@ -344,8 +345,12 @@ func (p *chainParser) nodeRef() string {
 	if strings.HasPrefix(p.rest(), ":::") {
 		p.i += 3
 		cs := p.i
-		for p.i < len(p.s) && (unicode.IsLetter(rune(p.s[p.i])) || unicode.IsDigit(rune(p.s[p.i])) || p.s[p.i] == '_' || p.s[p.i] == '-') {
-			p.i++
+		for p.i < len(p.s) {
+			r, size := utf8.DecodeRuneInString(p.s[p.i:])
+			if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '_' && r != '-' {
+				break
+			}
+			p.i += size
 		}
 		n.classes = append(n.classes, p.s[cs:p.i])
 	}
@@ -556,14 +561,4 @@ func styleOf(op string) (lineStyle, int) {
 		return lineInvisible, max(1, strings.Count(op, "~")-2)
 	}
 	return lineSolid, max(1, strings.Count(op, "-")-1)
-}
-
-func decodeRune(s string) (rune, int) {
-	for i, r := range s {
-		if i == 0 {
-			n := len(string(r))
-			return r, n
-		}
-	}
-	return 0, 1
 }

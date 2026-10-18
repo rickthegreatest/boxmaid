@@ -1,21 +1,35 @@
 # boxmaid
 
-**[Mermaid](https://mermaid.js.org) diagrams for the terminal.** boxmaid draws flowcharts, sequence, class, state, ER, C4, gantt, pie and 14 more diagram types with Unicode box-drawing characters (or plain ASCII). It lays them out so edges don't cross nodes, and fits them to the width you have.
+**Render Mermaid as terminal text in Rust.** Unicode box drawing or ASCII, semantic cell styling, width-aware layout, and an optional Ratatui widget. No browser or JavaScript runtime required.
+
+## How do I render a diagram?
 
 ```rust
 let pic = boxmaid::render("flowchart LR\n  A --> B", &boxmaid::Options { width: 80, ascii: false })?;
-println!("{pic}");                                     // plain text
-println!("{}", pic.ansi(&boxmaid::Theme::default()));  // coloured
+println!("{pic}");
+println!("{}", pic.ansi(&boxmaid::Theme::nord()));
 ```
 
-- Every cell carries a `Role` (node, edge, arrow, label…) so you can colour it with your own theme. Built-in themes: default, mono, dracula, nord.
-- The `ratatui` feature makes `&Picture` (and the scrollable `Diagram`) a ratatui `Widget`.
-- `replace_mermaid` draws every mermaid block of a Markdown document. `live_url` links to mermaid.live.
-- The `boxmaid` binary draws `.mmd` files and Markdown in the terminal: `cargo install boxmaid`.
-- Its only dependency is `regex`.
+`Picture` contains dimensions, title metadata, and a grid of `Cell`s. Each cell has a semantic `Role`, optional source colour, and emphasis. `Theme::cell_style` resolves those properties for custom adapters.
 
-The Go module [`github.com/boxmaid/boxmaid`](https://github.com/boxmaid/boxmaid) draws the same input to the same bytes; both are tested against one shared set of golden files.
+## How do I use it in Ratatui?
 
-See the [project README](https://github.com/boxmaid/boxmaid#readme) for the full list of diagrams and the [syntax coverage](https://github.com/boxmaid/boxmaid/blob/main/docs/syntax.md).
+Enable the `ratatui` feature and render `&Picture` as a widget, or use `Diagram::new(&pic).theme(...).scroll(x, y)`. Repeat rendering when the column budget changes. See the [viewer example](https://github.com/rickthegreatest/boxmaid/blob/main/rust/examples/ratatui_viewer.rs).
 
-License: MIT
+## Can I use a CLI or transform Markdown?
+
+Install the Rust CLI from the release with `cargo install --git https://github.com/rickthegreatest/boxmaid --tag v0.1.0 --locked boxmaid`. Use `boxmaid -w 80 -color never -require-fit diagram.mmd` for predictable output. `replace_mermaid` transforms fenced Mermaid blocks into text; `live_url` constructs a browser fallback URL without making a network request.
+
+## What are the compatibility limits?
+
+Boxmaid supports 22 diagram families with selective syntax coverage. Unknown statements within supported diagrams are generally skipped. Some charts become terminal-friendly bars/lists. Fitting is best-effort: compare `pic.w` with the requested width, or use CLI `-require-fit`.
+
+The crate requires Rust 1.88+ and depends on `regex`; Ratatui is optional. The [Go implementation](https://github.com/rickthegreatest/boxmaid) is checked against the same shared text fixtures.
+
+## Where are the full docs?
+
+[README](https://github.com/rickthegreatest/boxmaid#readme) · [Syntax coverage](https://github.com/rickthegreatest/boxmaid/blob/main/docs/syntax.md) · [Agent guide](https://github.com/rickthegreatest/boxmaid/blob/main/docs/agents.md) · [Architecture](https://github.com/rickthegreatest/boxmaid/blob/main/docs/architecture.md)
+
+## What is the license?
+
+MIT.

@@ -13,8 +13,9 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 
-	"github.com/boxmaid/boxmaid"
+	"github.com/rickthegreatest/boxmaid"
 )
 
 // Styles maps roles to lipgloss styles.
@@ -137,8 +138,27 @@ func (m *Model) SetSource(src string) {
 	m.render()
 }
 
+// SetStyles applies styles immediately without repeating layout.
+func (m *Model) SetStyles(styles Styles) {
+	m.Styles = styles
+	if m.pic != nil {
+		m.lines = Lines(m.pic, styles)
+	}
+}
+
+// SetOptions redraws using opt. The viewport manages opt.Width.
+func (m *Model) SetOptions(opt boxmaid.Options) {
+	m.Options = opt
+	m.render()
+}
+
+// Offset returns the viewport's column and row offsets.
+func (m Model) Offset() (x, y int) { return m.x, m.y }
+
 // SetSize sets the view's size; the diagram is redrawn to fit the width.
+// Non-positive dimensions produce an empty view.
 func (m *Model) SetSize(w, h int) {
+	w, h = max(0, w), max(0, h)
 	if w != m.w {
 		m.w, m.h = w, h
 		m.render()
@@ -167,6 +187,7 @@ func (m *Model) render() {
 
 func (m *Model) clamp() {
 	if m.pic == nil {
+		m.x, m.y = 0, 0
 		return
 	}
 	m.x = max(0, min(m.x, m.pic.W-m.w))
@@ -185,8 +206,8 @@ func has(keys []string, k string) bool {
 // Init does nothing; the model needs no commands.
 func (m Model) Init() tea.Cmd { return nil }
 
-// Update pans with the keys and the mouse wheel, and follows window sizes
-// when the model fills the window.
+// Update pans with keys and the mouse wheel. The containing application
+// calls SetSize with the space allocated to the diagram on window resize.
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -225,25 +246,27 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// View is the visible part of the diagram.
+// View is the visible part of the diagram, padded to the viewport height
+// so surrounding controls do not jump when the source changes.
 func (m Model) View() string {
-	if m.err != nil {
-		return lipgloss.NewStyle().Foreground(lipgloss.Color("1")).Render(m.err.Error())
-	}
-	if m.pic == nil {
+	if m.w <= 0 || m.h <= 0 {
 		return ""
 	}
-	var out []string
-	for i := m.y; i < min(len(m.lines), m.y+max(1, m.h)); i++ {
-		out = append(out, cut(m.lines[i], m.x, m.w))
+	out := make([]string, m.h)
+	if m.err != nil {
+		out[0] = cut(lipgloss.NewStyle().Foreground(lipgloss.Color("1")).Render(m.err.Error()), 0, m.w)
+	} else {
+		for i := m.y; i < min(len(m.lines), m.y+m.h); i++ {
+			out[i-m.y] = cut(m.lines[i], m.x, m.w)
+		}
 	}
 	return strings.Join(out, "\n")
 }
 
 // cut keeps w cells of a styled line, starting at cell x.
 func cut(s string, x, w int) string {
-	if x == 0 && (w <= 0 || lipgloss.Width(s) <= w) {
-		return s
+	if w <= 0 {
+		return ""
 	}
-	return truncateANSI(dropANSI(s, x), w)
+	return ansi.Cut(s, x, x+w)
 }

@@ -1,3 +1,3 @@
-module github.com/boxmaid/boxmaid
+module github.com/rickthegreatest/boxmaid
 
 go 1.22

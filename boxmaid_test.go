@@ -143,6 +143,32 @@ func TestFitsWidth(t *testing.T) {
 	}
 }
 
+func TestLinearFlowchartStaysCompact(t *testing.T) {
+	p, err := Render("flowchart LR\nA[Source]-->B[Layout]-->C[Text]", Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p.H != 3 {
+		t.Fatalf("a single incoming/outgoing edge must not inflate node height: %s", p)
+	}
+}
+
+func TestArchitectureMembershipAfterRedeclaration(t *testing.T) {
+	g, _, err := parseArchitecture("", "group a[Old]\ngroup b[Backend]\ngroup a[Frontend] in b\nservice api(database)[Old API] in b\nservice api(server)[API] in a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(g.root.children) != 1 || g.root.children[0].id != "b" || len(g.clusters["b"].children) != 1 {
+		t.Fatal("redeclared groups must not duplicate frames")
+	}
+	if len(g.clusters["b"].nodes) != 0 || len(g.clusters["a"].nodes) != 1 || g.nodes["api"].cluster != g.clusters["a"] {
+		t.Fatal("a redeclared service must belong to exactly its final group")
+	}
+	if g.nodes["api"].shape != shapeRect {
+		t.Fatal("a redeclared service must use its final shape")
+	}
+}
+
 func TestSequence(t *testing.T) {
 	out := render(t, `sequenceDiagram
   autonumber

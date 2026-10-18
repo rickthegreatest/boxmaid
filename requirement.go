@@ -99,7 +99,8 @@ func parseArchitecture(_, rest string) (*graph, string, error) {
 	g := newGraph("TB")
 	horizontal, vertical := 0, 0
 	type pending struct{ id, parent string }
-	var groups []pending
+	var groups []string
+	parents := map[string]string{}
 	var members []pending
 	for _, raw := range strings.Split(rest, "\n") {
 		line := strings.TrimSpace(raw)
@@ -108,13 +109,18 @@ func parseArchitecture(_, rest string) (*graph, string, error) {
 		case archGroup.MatchString(line):
 			m := archGroup.FindStringSubmatch(line)
 			title := orStr(m[3], m[1])
-			groups = append(groups, pending{m[1], m[4]})
-			g.clusters[m[1]] = &cluster{id: m[1], title: title}
+			if _, exists := g.clusters[m[1]]; !exists {
+				groups = append(groups, m[1])
+				g.clusters[m[1]] = &cluster{id: m[1]}
+			}
+			g.clusters[m[1]].title = title
+			parents[m[1]] = m[4]
 		case archService.MatchString(line):
 			m := archService.FindStringSubmatch(line)
 			n := g.node(m[1], g.root)
 			n.defined = true
 			n.label = []string{orStr(m[3], m[1])}
+			n.shape, n.header = shapeRect, nil
 			if m[2] != "" {
 				n.header = []string{m[2]}
 			}
@@ -130,6 +136,7 @@ func parseArchitecture(_, rest string) (*graph, string, error) {
 			m := archJunction.FindStringSubmatch(line)
 			n := g.node(m[1], g.root)
 			n.defined, n.shape, n.label = true, shapeStart, []string{""}
+			n.header = nil
 			members = append(members, pending{m[1], m[2]})
 		case archEdge.MatchString(line):
 			m := archEdge.FindStringSubmatch(line)
@@ -149,22 +156,21 @@ func parseArchitecture(_, rest string) (*graph, string, error) {
 		}
 	}
 	// Nest groups and place services now that every group is known.
-	for _, gr := range groups {
-		c := g.clusters[gr.id]
+	for _, id := range groups {
+		c := g.clusters[id]
 		parent := g.root
-		if p, ok := g.clusters[gr.parent]; ok && gr.parent != "" && !within(p, c) {
+		if p, ok := g.clusters[parents[id]]; ok && parents[id] != "" && !within(p, c) {
 			parent = p
 		}
 		c.parent = parent
 		parent.children = append(parent.children, c)
 	}
 	for _, m := range members {
-		if c, ok := g.clusters[m.parent]; ok && m.parent != "" {
-			n := g.nodes[m.id]
-			g.root.nodes = remove(g.root.nodes, m.id)
-			n.cluster = c
-			c.nodes = append(c.nodes, m.id)
+		c := g.root
+		if parent, ok := g.clusters[m.parent]; ok && m.parent != "" {
+			c = parent
 		}
+		g.moveNode(m.id, c)
 	}
 	if horizontal > vertical {
 		g.dir = "LR"

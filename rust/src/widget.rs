@@ -10,9 +10,15 @@ use crate::{Picture, Theme};
 /// A picture drawn with a theme, scrolled to an offset. A `&Picture` is a
 /// widget too, drawn with the default theme from its top left corner.
 ///
-/// ```ignore
-/// let pic = boxmaid::render(src, &boxmaid::Options { width: area.width as usize, ..Default::default() })?;
-/// frame.render_widget(boxmaid::Diagram::new(&pic).theme(boxmaid::Theme::nord()).scroll(0, top), area);
+/// ```
+/// use ratatui::{buffer::Buffer, layout::Rect, widgets::Widget};
+/// # fn main() -> Result<(), boxmaid::Error> {
+/// let area = Rect::new(0, 0, 80, 24);
+/// let pic = boxmaid::render("graph LR\nA-->B", &boxmaid::Options { width: 80, ..Default::default() })?;
+/// let mut buffer = Buffer::empty(area);
+/// boxmaid::Diagram::new(&pic).theme(boxmaid::Theme::nord()).scroll(0, 0).render(area, &mut buffer);
+/// # Ok(())
+/// # }
 /// ```
 #[derive(Clone, Debug)]
 pub struct Diagram<'a> {
@@ -90,15 +96,12 @@ impl Widget for Diagram<'_> {
                     }
                     continue;
                 }
-                let mut st = t.style(c.role);
-                if !c.color.is_empty() && t.true_color {
-                    st.color = c.color.clone();
-                }
+                let st = t.cell_style(c);
                 let mut s = TuiStyle::default();
                 if let Some(fg) = color(&st.color, t.true_color) {
                     s = s.fg(fg);
                 }
-                if st.bold || c.bold {
+                if st.bold {
                     s = s.add_modifier(Modifier::BOLD);
                 }
                 let wide_cut = x as usize + 1 >= right && row.get(self.x + dx + 1).is_some_and(|n| n.wide);

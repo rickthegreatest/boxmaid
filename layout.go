@@ -407,8 +407,9 @@ func (l *level) reservePorts() {
 		}
 	}
 	for _, it := range l.items {
-		// A single edge has the centre to itself.
-		if it.kind == kNode && marked[it] && in[it]+out[it] > 1 {
+		// Opposite sides can each use their centre. Only multiple edges on
+		// the same side need more room; a linear chain stays three rows high.
+		if it.kind == kNode && marked[it] && max(in[it], out[it]) > 1 {
 			it.minO = 2*max(in[it], out[it]) + 3
 		}
 	}
@@ -749,9 +750,6 @@ func (l *level) portOff(it *item, s *seg) int {
 func (l *level) sep(a, b *item) int {
 	big := func(it *item) bool { return it.kind == kNode || it.kind == kCluster }
 	if l.lr() {
-		if big(a) && big(b) {
-			return 1
-		}
 		return 1
 	}
 	if big(a) && big(b) {

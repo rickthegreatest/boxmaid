@@ -4,3 +4,6 @@ use (
 	.
 	./tui
 )
+
+// Resolve the release dependency locally before the first tag exists.
+replace github.com/rickthegreatest/boxmaid v0.1.0 => .

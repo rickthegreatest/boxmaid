@@ -123,7 +123,8 @@ fn parse_architecture(rest: &str) -> Result<Graph, Error> {
     let mut g = Graph::new("TB");
     let (mut horizontal, mut vertical) = (0, 0);
     // (id, parent) pairs, resolved once every group is known.
-    let mut groups: Vec<(String, String)> = vec![];
+    let mut groups: Vec<String> = vec![];
+    let mut parents = std::collections::HashMap::new();
     let mut members: Vec<(String, String)> = vec![];
     for raw in rest.split('\n') {
         let line = raw.trim();
@@ -132,14 +133,23 @@ fn parse_architecture(rest: &str) -> Result<Graph, Error> {
         }
         if let Some(m) = ARCH_GROUP.captures(line) {
             let title = or_str(group(&m, 3), &m[1]);
-            groups.push((m[1].to_string(), group(&m, 4).to_string()));
-            let i = g.cl.len();
-            g.cl.push(Cluster { id: m[1].to_string(), title, ..Default::default() });
-            g.clusters.insert(m[1].to_string(), i);
+            let c = if let Some(&c) = g.clusters.get(&m[1]) {
+                c
+            } else {
+                groups.push(m[1].to_string());
+                let c = g.cl.len();
+                g.cl.push(Cluster { id: m[1].to_string(), ..Default::default() });
+                g.clusters.insert(m[1].to_string(), c);
+                c
+            };
+            g.cl[c].title = title;
+            parents.insert(m[1].to_string(), group(&m, 4).to_string());
         } else if let Some(m) = ARCH_SERVICE.captures(line) {
             let n = g.node(&m[1], ROOT);
             n.defined = true;
             n.label = vec![or_str(group(&m, 3), &m[1])];
+            n.shape = Shape::Rect;
+            n.header.clear();
             let icon = group(&m, 2);
             if !icon.is_empty() {
                 n.header = vec![icon.to_string()];
@@ -158,6 +168,7 @@ fn parse_architecture(rest: &str) -> Result<Graph, Error> {
             n.defined = true;
             n.shape = Shape::Start;
             n.label = vec![String::new()];
+            n.header.clear();
             members.push((m[1].to_string(), group(&m, 2).to_string()));
         } else if let Some(m) = ARCH_EDGE.captures(line) {
             let mut e = Edge { from: m[1].to_string(), to: m[6].to_string(), ..Default::default() };
@@ -177,7 +188,8 @@ fn parse_architecture(rest: &str) -> Result<Graph, Error> {
         }
     }
     // Nest groups and place services now that every group is known.
-    for (id, parent) in &groups {
+    for id in &groups {
+        let parent = &parents[id];
         let c = g.clusters[id];
         let p = match g.clusters.get(parent) {
             Some(&p) if !parent.is_empty() && !within(&g, p, c) => p,
@@ -187,14 +199,8 @@ fn parse_architecture(rest: &str) -> Result<Graph, Error> {
         g.cl[p].children.push(c);
     }
     for (id, parent) in &members {
-        if parent.is_empty() {
-            continue;
-        }
-        if let Some(&c) = g.clusters.get(parent) {
-            g.cl[ROOT].nodes.retain(|x| x != id);
-            g.nodes.get_mut(id).unwrap().cluster = c;
-            g.cl[c].nodes.push(id.clone());
-        }
+        let c = g.clusters.get(parent).copied().unwrap_or(ROOT);
+        g.move_node(id, c);
     }
     if horizontal > vertical {
         g.dir = "LR".to_string();

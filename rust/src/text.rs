@@ -2,7 +2,7 @@
 
 use crate::entities::{decode_entity, unescape_html};
 use crate::re::lazy_re;
-use crate::width::{graphemes, string_width, truncate};
+use crate::width::{graphemes, string_width};
 
 lazy_re!(BR_TAG, r"(?i)<br\s*/?>");
 lazy_re!(ANY_TAG, r"</?[a-zA-Z][^<>]*>");
@@ -60,7 +60,8 @@ pub(crate) fn wrap(lines: &[String], max: i64) -> Vec<String> {
         }
         let mut cur = String::new();
         for word in l.split_whitespace() {
-            let mut w = word.to_string();
+            // Match the canvas's visible text before using byte offsets to split it.
+            let mut w: String = graphemes(word).iter().map(|g| g.0).collect();
             while string_width(&w) > max_w {
                 let head = break_word(&w, max_w);
                 if !cur.is_empty() {
@@ -95,31 +96,27 @@ pub(crate) fn max_width<S: AsRef<str>>(lines: &[S]) -> i64 {
 /// (after _ - / . , or between a lower and an upper case letter) when there
 /// is one in the second half, else exactly max columns.
 fn break_word(w: &str, max: usize) -> String {
-    let head = truncate(w, max);
-    if head.is_empty() {
-        // A wide character in a 1-column space: take it anyway.
-        return graphemes(w).first().map_or(w.to_string(), |g| g.0.to_string());
+    let gs = graphemes(w);
+    if gs.is_empty() {
+        return w.to_string();
     }
-    let rs: Vec<char> = head.chars().collect();
-    let full: Vec<char> = w.chars().collect();
-    let mut best: i64 = -1;
-    let mut i = rs.len() as i64 - 1;
-    while i >= (rs.len() / 2) as i64 {
-        let r = rs[i as usize];
-        if "_-/.,:;|".contains(r) {
-            best = i + 1;
-            break;
+    let (mut n, mut used) = (0, 0);
+    while n < gs.len() && used + gs[n].1 <= max {
+        used += gs[n].1;
+        n += 1;
+    }
+    if n == 0 {
+        // A wide grapheme in one column: take it anyway to make progress.
+        return gs[0].0.to_string();
+    }
+    for i in (n / 2..n).rev() {
+        let r = gs[i].0.chars().next().unwrap_or('\0');
+        let next = gs.get(i + 1).and_then(|g| g.0.chars().next()).unwrap_or('\0');
+        if "_-/.,:;|".contains(r) || r.is_lowercase() && next.is_uppercase() {
+            return gs[..=i].iter().map(|g| g.0).collect();
         }
-        if (i as usize) + 1 < full.len() && r.is_lowercase() && full[i as usize + 1].is_uppercase() {
-            best = i + 1;
-            break;
-        }
-        i -= 1;
     }
-    if best > 0 && best < rs.len() as i64 + 1 {
-        return rs[..best as usize].iter().collect();
-    }
-    head
+    gs[..n].iter().map(|g| g.0).collect()
 }
 
 /// Splits at sep outside double quotes.
@@ -154,5 +151,20 @@ pub(crate) fn pad_right(s: &str, w: i64) -> String {
         format!("{s}{}", " ".repeat(n as usize))
     } else {
         s.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn wrapping_preserves_visible_graphemes() {
+        for word in [format!("\u{200b}{}", "界".repeat(30)), format!("{}-\u{0301}{}", "x".repeat(15), "y".repeat(20)), "👩‍💻".repeat(20)] {
+            let lines = wrap(std::slice::from_ref(&word), 28);
+            assert!(lines.iter().all(|l| string_width(l) <= 28), "{lines:?}");
+            let visible: String = graphemes(&word).iter().map(|g| g.0).collect();
+            assert_eq!(lines.concat(), visible);
+        }
     }
 }

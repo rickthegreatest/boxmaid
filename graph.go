@@ -112,11 +112,20 @@ func (g *graph) node(id string, c *cluster) *node {
 		return n
 	}
 	if n.cluster == g.root && c != g.root {
-		g.root.nodes = remove(g.root.nodes, id)
-		n.cluster = c
-		c.nodes = append(c.nodes, id)
+		g.moveNode(id, c)
 	}
 	return n
+}
+
+// moveNode keeps both sides of membership in sync, including redeclarations.
+func (g *graph) moveNode(id string, c *cluster) {
+	n := g.nodes[id]
+	if n.cluster == c {
+		return
+	}
+	n.cluster.nodes = remove(n.cluster.nodes, id)
+	n.cluster = c
+	c.nodes = append(c.nodes, id)
 }
 
 func (g *graph) addCluster(id, title string, parent *cluster) *cluster {

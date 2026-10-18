@@ -1,33 +1,72 @@
-# Contributing
+# How can I contribute?
 
-Thanks for helping! A few things keep boxmaid what it is.
+Small, reproducible diagram fixes are especially welcome. Include the source, requested width, actual drawing, and expected behavior. For implementation work, read [architecture](docs/architecture.md) and [syntax coverage](docs/syntax.md) first.
 
-## One output, two languages
+## What tools do I need?
 
-The Go module and the Rust crate must draw every input to exactly the same text. So a change to the drawing has to land in both, in the same pull request. The goldens enforce this:
+Go 1.24+ for the full workspace (the core alone supports 1.22), Rust 1.88+, and Python 3.9+ for repository/release scripts. The Go core has no third-party dependencies. Rust uses `regex`, with optional Ratatui. Work from the repository root unless a command says otherwise.
 
-1. Make the change in Go and run `go test ./...`.
-2. If the output changed on purpose, regenerate with `go test -run Golden -update` and review the diff in `testdata/golden/`.
-3. Make the same change in `rust/`. `cd rust && cargo test` has to pass against the new goldens, byte for byte.
+`go.work` resolves the core and TUI module locally, including the first unreleased core version. `tui/go.mod` has a real tagged dependency and no local replacement, so downstream consumers can use it normally after publication.
 
-When you add a case, put the source in `testdata/cases/<name>.mmd`. Both test suites pick it up automatically.
+## Which checks should I run?
 
-Some things need care to keep the two identical:
+```sh
+gofmt -w .
+go vet ./... ./tui/...
+go test -race ./... ./tui/...
+cargo fmt --manifest-path rust/Cargo.toml --check
+cargo clippy --manifest-path rust/Cargo.toml --locked --all-targets --all-features -- -D warnings
+cargo test --manifest-path rust/Cargo.toml --locked --all-features
+go run ./internal/artwork -check
+```
 
-- Go's integer division and `int(float)` truncate toward zero, so in Rust use `i64` arithmetic and `as i64`.
-- Rust's regex `\w \s \d \b` are Unicode-aware but Go's are ASCII. Compile patterns with `re::lazy_re!`, which rewrites them.
-- Sorts must be stable: Go's `sort.SliceStable` corresponds to Rust's `sort_by`.
-- Never let map iteration order reach the output.
-- Character widths, HTML entities, date maths and number formatting come from shared tables and our own code, not the platform. Use them.
+For CLI parity (example paths for macOS/Linux):
 
-`LiveURL` is the one exception: both produce valid mermaid.live links, but the compressed bytes differ.
+```sh
+go build -o /tmp/boxmaid-go ./cmd/boxmaid
+cargo build --locked --manifest-path rust/Cargo.toml
+python3 scripts/check-parity.py --go /tmp/boxmaid-go --rust rust/target/debug/boxmaid
+```
 
-## Style
+The script compares fixture rendering at unlimited, 30, 60, and 120 columns in Unicode/ASCII, plus colour themes, status codes, Markdown boundaries, and decoded browser links. On Windows, choose a temporary `.exe` path and pass `rust/target/debug/boxmaid.exe`.
 
-- Go: `gofmt`, `go vet`. The core module stays dependency-free.
-- Rust: `cargo fmt` (see `rustfmt.toml`) and `cargo clippy --all-features -- -D warnings`. The only runtime dependency is `regex` (plus `ratatui` behind its feature).
-- Match the surrounding code: short doc comments that say why, not what.
+CI also checks the minimum language versions and runs Go/Rust tests on Linux, macOS, and Windows. A local run only establishes compatibility with the local platform/toolchains.
 
-## Reporting a diagram that draws badly
+## How do I change a drawing?
 
-Open an issue with the Mermaid source, the width you drew it at, and what you expected. A case for `testdata/cases/` is the most useful fix you can send.
+1. Add a minimal `.mmd` case under `testdata/cases/` and an assertion for the behavior when the fixture alone would not expose the bug.
+2. Implement the fix in Go and Rust in the same change.
+3. Run `go test -run Golden -update` to regenerate shared fixtures.
+4. Inspect **every changed drawing** in `testdata/golden/`; do not accept snapshots blindly.
+5. Run both test suites and CLI parity. If artwork changed, regenerate it and inspect it too.
+
+Goldens include Unicode at width 100 and ASCII at width 80. Both language suites discover new cases automatically. Drawing changes can legitimately alter many snapshots; explain the actual layout improvement.
+
+## What keeps Go and Rust aligned?
+
+- Integer division and float-to-integer conversion truncate toward zero. Use signed intermediate layout arithmetic where needed in Rust.
+- Rust's regex shorthand classes are Unicode-aware; Go's are ASCII. Use `re::lazy_re!` for portable patterns.
+- Stable sorts and source order matter. Never let unordered map iteration determine output.
+- Reuse shared-width behavior, portable dates, entities, and number formatting. Fix incorrect behavior in both implementations rather than copying a language-specific bug.
+- Browser-link compressed bytes may differ, but must decode to equivalent source state.
+
+## What code style should I follow?
+
+Prefer straightforward code, composition, explicit ownership, and small helpers with real callers. Keep graph semantics in the graph model, geometry in layout/drawing, and framework/terminal behavior in adapters. Avoid speculative abstraction layers and unrelated cleanup.
+
+Do not add dependencies to the Go core for functionality already available in the standard library. Explain new runtime dependencies. Keep comments about contracts, invariants, and non-obvious decisions rather than narrating statements.
+
+## How do I update the images?
+
+Edit Mermaid source in `docs/examples/` or presentation code in `internal/artwork/`, then run:
+
+```sh
+go run ./internal/artwork
+go run ./internal/artwork -check
+```
+
+Generated SVGs go in `docs/assets/`. They use real renderer geometry and semantic cell styles; they are not manually drawn diagrams. Inspect at README display size, check readable contrast, and keep descriptive alt text. Do not hand-edit generated SVGs.
+
+## How are releases made?
+
+Follow [the release guide](docs/releasing.md). Core Go and `/tui` need separate tags, and the core must be available before the TUI dependency can resolve outside this workspace.

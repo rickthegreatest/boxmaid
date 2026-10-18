@@ -520,7 +520,8 @@ impl<'g> Level<'g> {
         }
         for (i, it) in self.items.iter_mut().enumerate() {
             // A single edge has the centre to itself.
-            if it.kind == Kind::Node && marked[i] && inn[i] + out[i] > 1 {
+            // Opposite sides can each use their centre; only shared sides need room.
+            if it.kind == Kind::Node && marked[i] && inn[i].max(out[i]) > 1 {
                 it.min_o = 2 * inn[i].max(out[i]) + 3;
             }
         }

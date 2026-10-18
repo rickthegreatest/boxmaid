@@ -2,8 +2,10 @@ package boxmaid
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 var (
@@ -68,6 +70,10 @@ func wrap(lines []string, max int) []string {
 		}
 		cur := ""
 		for _, w := range strings.Fields(l) {
+			// Work with the same visible graphemes the canvas will draw. This
+			// keeps a split's byte offset valid when leading zero-width text drops.
+			gs, _ := graphemes(w)
+			w = strings.Join(gs, "")
 			for width(w) > max {
 				head := breakWord(w, max)
 				if cur != "" {
@@ -106,48 +112,31 @@ func maxWidth(lines []string) int {
 // natural break (after _ - / . , or between a lower and an upper case
 // letter) when there is one in the second half, else exactly max columns.
 func breakWord(w string, max int) string {
-	head := truncate(w, max)
-	if head == "" { // a wide character in a 1-column space: take it anyway
-		gs, _ := graphemes(w)
-		if len(gs) == 0 {
-			return w
-		}
+	gs, widths := graphemes(w)
+	if len(gs) == 0 {
+		return w
+	}
+	n, used := 0, 0
+	for n < len(gs) && used+widths[n] <= max {
+		used += widths[n]
+		n++
+	}
+	if n == 0 { // a wide grapheme in one column: take it anyway to make progress
 		return gs[0]
 	}
-	best := -1
-	rs := []rune(head)
-	full := []rune(w)
-	for i := len(rs) - 1; i >= len(rs)/2; i-- {
-		r := rs[i]
-		if strings.ContainsRune("_-/.,:;|", r) {
-			best = i + 1
-			break
+	for i := n - 1; i >= n/2; i-- {
+		r, _ := utf8.DecodeRuneInString(gs[i])
+		next := rune(0)
+		if i+1 < len(gs) {
+			next, _ = utf8.DecodeRuneInString(gs[i+1])
 		}
-		if i+1 < len(full) && unicode.IsLower(r) && unicode.IsUpper(full[i+1]) {
-			best = i + 1
-			break
+		if strings.ContainsRune("_-/.,:;|", r) || unicode.IsLower(r) && unicode.IsUpper(next) {
+			return strings.Join(gs[:i+1], "")
 		}
 	}
-	if best > 0 && best < len(rs)+1 {
-		return string(rs[:best])
-	}
-	return head
+	return strings.Join(gs[:n], "")
 }
 
 func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	neg := n < 0
-	if neg {
-		n = -n
-	}
-	var b []byte
-	for ; n > 0; n /= 10 {
-		b = append([]byte{byte('0' + n%10)}, b...)
-	}
-	if neg {
-		b = append([]byte{'-'}, b...)
-	}
-	return string(b)
+	return strconv.Itoa(n)
 }

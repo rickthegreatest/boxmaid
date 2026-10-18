@@ -40,6 +40,12 @@ fn fits_width() {
 }
 
 #[test]
+fn linear_flowchart_stays_compact() {
+    let p = render("flowchart LR\nA[Source]-->B[Layout]-->C[Text]", &Options::default()).unwrap();
+    assert_eq!(p.h, 3, "{p}");
+}
+
+#[test]
 fn sequence() {
     let out = draw(
         "sequenceDiagram\n  autonumber\n  actor U as Customer\n  participant A as API\n  U->>+A: POST /checkout\n  alt ok\n    A-->>U: 201\n  else failed\n    A--xU: 402\n  end\n  A->>A: retry\n  Note over U,A: idempotent\n  deactivate A",
@@ -122,6 +128,36 @@ fn markdown_blocks() {
 }
 
 #[test]
+fn markdown_fence_boundaries() {
+    for md in [
+        "````markdown\n```mermaid\nflowchart LR\nA-->B\n```\n````\n",
+        "```mermaid-example\nflowchart LR\nA-->B\n```\n",
+        "```mermaid\nflowchart LR\nA-->B\n~~~\n",
+        "````mermaid\nflowchart LR\nA-->B\n```\n",
+        "```mermaid\nflowchart LR\nA-->B\n",
+        "```mermaid\nzenuml\n```\n",
+    ] {
+        assert_eq!(replace_mermaid(md, &Options::default()), md);
+    }
+    let md = "Intro\r\n\r\n  ~~~mermaid\r\n  flowchart LR\r\n  A-->B\r\n  ~~~~\r\nAfter\r\n";
+    let got = replace_mermaid(md, &Options::default());
+    assert!(got.contains("  ~~~text\r\n"), "{got:?}");
+    assert!(got.ends_with("  ~~~~\r\nAfter\r\n"), "{got:?}");
+    assert!(!got.replace("\r\n", "").contains('\n'), "{got:?}");
+}
+
+#[test]
+fn pie_labels_and_large_values() {
+    let name = "界".repeat(20);
+    let got = draw(&format!("pie\n\"{name}\": 1"), Options::default());
+    assert!(got.contains(&("界".repeat(14) + "…")), "{got}");
+    assert!(!got.contains('\u{fffd}'), "{got}");
+    let large = "9".repeat(308);
+    let got = draw(&format!("pie\n\"A\": {large}\n\"B\": {large}"), Options::default());
+    assert_eq!(got.matches("50.0%").count(), 2, "{got}");
+}
+
+#[test]
 fn ansi_colours() {
     let p = render("flowchart LR\n  A --> B", &Options::default()).unwrap();
     let out = p.ansi(&Theme::default());
@@ -129,4 +165,11 @@ fn ansi_colours() {
     assert_eq!(p.ansi(&Theme::by_name("mono").unwrap()).lines().count(), p.h);
     assert!(Theme::default().styles.contains_key(&Role::Warn));
     assert!(Theme::names().iter().all(|n| Theme::by_name(n).is_some()));
+    let mut cell = boxmaid::Cell::default();
+    cell.role = Role::Node;
+    cell.color = "#123456".into();
+    cell.bold = true;
+    assert_eq!(Theme::nord().cell_style(&cell).color, "#123456");
+    assert_eq!(Theme::default().cell_style(&cell).color, "4");
+    assert!(Theme::default().cell_style(&cell).bold);
 }

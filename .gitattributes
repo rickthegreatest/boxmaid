@@ -1,0 +1,6 @@
+# Shared text fixtures must retain LF on every checkout platform.
+* text=auto eol=lf
+*.png binary
+
+# Empty title metadata intentionally retains its "title: " separator.
+testdata/golden/*.txt whitespace=-blank-at-eol

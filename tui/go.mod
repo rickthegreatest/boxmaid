@@ -1,9 +1,9 @@
-module github.com/boxmaid/boxmaid/tui
+module github.com/rickthegreatest/boxmaid/tui
 
 go 1.24.0
 
 require (
-	github.com/boxmaid/boxmaid v0.0.0
+	github.com/rickthegreatest/boxmaid v0.1.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/charmbracelet/x/ansi v0.10.1
@@ -27,6 +27,3 @@ require (
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.3.8 // indirect
 )
-
-// Developed alongside the core; a release pins a tagged version instead.
-replace github.com/boxmaid/boxmaid => ../

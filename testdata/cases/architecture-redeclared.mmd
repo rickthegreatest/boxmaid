@@ -1,0 +1,8 @@
+architecture-beta
+  group a[First]
+  group b[Backend]
+  group a[Frontend] in b
+  service api(database)[Old API] in b
+  service api(server)[API] in a
+  service db(database)[Store] in b
+  api:R --> L:db
