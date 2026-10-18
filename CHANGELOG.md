@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add a runnable Bubble Tea service-runbook demo, terminal recordings, and an embedding walkthrough with a Ratatui capture.
 - Move Go parsing, layout, canvas, and implementation tests into `internal/renderer/`, leaving the public API, styling, and contract tests at the repository root.
 - Preserve public Go named types and method sets, and build the public cell grid directly from the selected canvas after width fitting.
 - Update the architecture map and contributor/agent guidance for the new package layout.

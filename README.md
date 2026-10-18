@@ -25,6 +25,12 @@ Boxmaid turns Mermaid source into Unicode box-drawing characters or plain ASCII.
 
 The Go core has no third-party dependencies. The Rust core depends on `regex`; Ratatui is optional. The CLI and rendering libraries work offline. `-live` only constructs a URL; opening it is up to you.
 
+## What does it look like inside a real TUI?
+
+![The Boxmaid service runbook switches diagrams and toggles between rendered output and Mermaid source inside Bubble Tea.](docs/assets/runbook.gif)
+
+Run `go run ./tui/examples/runbook` from a checkout with Go 1.24+. Select a diagram with **1–3**, toggle its Mermaid source with **s**, and pan with arrows or **hjkl**. See the [walkthrough, static screenshots, and Ratatui capture](docs/demo.md) or the [complete example](tui/examples/runbook).
+
 ## How do I try it?
 
 Install the Go CLI:

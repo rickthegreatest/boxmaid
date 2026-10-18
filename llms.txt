@@ -6,6 +6,7 @@
 
 - [Overview and quick start](https://github.com/rickthegreatest/boxmaid/blob/main/README.md)
 - [Agent integration and command contracts](https://github.com/rickthegreatest/boxmaid/blob/main/docs/agents.md)
+- [Runnable TUI demo and embedding walkthrough](https://github.com/rickthegreatest/boxmaid/blob/main/docs/demo.md)
 - [Exact syntax coverage and omissions](https://github.com/rickthegreatest/boxmaid/blob/main/docs/syntax.md)
 - [Architecture and invariants](https://github.com/rickthegreatest/boxmaid/blob/main/docs/architecture.md)
 - [Repository agent instructions](https://github.com/rickthegreatest/boxmaid/blob/main/AGENTS.md)

@@ -1,0 +1,6 @@
+flowchart LR
+  subgraph gateway[Gateway]
+    client[Client] --> api[API]
+  end
+  api --> worker[Worker]
+  worker --> store[(Orders)]

@@ -19,6 +19,7 @@
   <header class="nav wrap">
     <a class="brand" href="./" aria-label="Boxmaid home">boxmaid<span aria-hidden="true">▍</span></a>
     <nav aria-label="Main navigation">
+      <a href="#demo">Demo</a>
       <a href="https://github.com/rickthegreatest/boxmaid#readme">Docs</a>
       <a href="https://github.com/rickthegreatest/boxmaid/blob/main/docs/agents.md">For agents</a>
       <a href="https://github.com/rickthegreatest/boxmaid">GitHub ↗</a>
@@ -35,6 +36,16 @@
       </div>
       <p class="detail">Open source · MIT licensed · No browser or JavaScript runtime required</p>
       <img class="hero" src="assets/hero.svg" width="1200" height="518" alt="Boxmaid renders a Mermaid source node through native layout into terminal text, using Unicode boxes and arrows.">
+    </section>
+    <section class="section" id="demo" aria-labelledby="demo-title">
+      <p class="eyebrow">A REAL TUI INTEGRATION</p>
+      <h2 id="demo-title">Can my runbook show the diagram and its source?</h2>
+      <p>This runnable Bubble Tea example selects checkout, request, and service diagrams. Press <code>s</code> to toggle the Mermaid source. Everything shown uses synthetic, embedded data.</p>
+      <picture>
+        <source media="(prefers-reduced-motion: reduce)" srcset="assets/runbook.png">
+        <img class="gallery" src="assets/runbook.gif" width="1120" height="560" loading="lazy" alt="A real terminal runbook switches between three Mermaid diagrams and their original source.">
+      </picture>
+      <div class="actions"><a class="button" href="https://github.com/rickthegreatest/boxmaid/blob/main/docs/demo.md">Run the demo ↗</a><a class="button" href="https://github.com/rickthegreatest/boxmaid/tree/main/tui/examples/runbook">Read the example ↗</a></div>
     </section>
     <section class="features" aria-label="Capabilities">
       <article><p class="number">22</p><h2>Which diagrams can I draw?</h2><p>Flowcharts, sequences, classes, ER, C4, Gantt, and more. Each family has <a href="https://github.com/rickthegreatest/boxmaid/blob/main/docs/syntax.md">documented syntax coverage</a>.</p></article>

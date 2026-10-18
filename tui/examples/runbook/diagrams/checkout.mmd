@@ -1,0 +1,4 @@
+flowchart LR
+  A[Checkout] --> B{In stock?}
+  B -->|yes| C[Reserve]
+  B -->|no| D[Reject]
