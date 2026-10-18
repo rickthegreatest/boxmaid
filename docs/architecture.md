@@ -14,26 +14,50 @@ Mermaid source
   → plain text / ANSI / Bubble Tea / Ratatui
 ```
 
-The Go entry point is `Render` in `boxmaid.go`; Rust uses `render` in `rust/src/lib.rs`. Both register accepted headers and dispatch to a renderer. Rendering returns a picture and source title; titles remain metadata rather than being inserted into the cell grid.
+The public Go entry point is `Render` in `boxmaid.go`. It delegates parsing and layout to `internal/renderer`, then adapts the final drawing to the public named types. Rust uses `render` in `rust/src/lib.rs`. Rendering returns a picture and source title; titles remain metadata rather than being inserted into the cell grid.
 
 ## Where does each responsibility live?
 
+```text
+boxmaid.go           public Go types and entry points
+style.go             public Go themes and ANSI output
+boxmaid_test.go      public contract, shared golden, and fuzz tests
+cmd/boxmaid/         Go CLI and terminal discovery
+internal/
+  renderer/          Go parsers, layout, canvas, and implementation tests
+  artwork/           reproducible README artwork
+tui/                 separately versioned Bubble Tea adapter and example
+rust/                Rust crate, CLI, Ratatui adapter, and tests
+testdata/            shared Mermaid cases, expected drawings, and fuzz seeds
+docs/                guides, examples, artwork, release notes, and website
+scripts/             release and cross-language contract checks
+```
+
+The Go implementation stays one cohesive internal package because graph parsers share private graph/layout structures. This keeps the repository root focused on the public interface without creating artificial package boundaries between tightly coupled passes. Implementation tests live beside that code; public golden and fuzz tests remain at the root so corpus paths and regeneration commands stay stable.
+
 | Responsibility | Go | Rust |
 |---|---|---|
-| Public API, dispatch, source cleanup | `boxmaid.go` | `src/lib.rs` |
-| Graph nodes, edges, cluster membership | `graph.go` | `src/graph.rs` |
-| Graph layout, ranking, ordering, placement, routing | `layout.go` | `src/layout.rs` |
-| Graph drawing and width-fit attempts | `draw.go`, `canvas.go` | `src/draw.rs`, `src/canvas.rs` |
-| Diagram syntax and specialized layout | `flowchart.go`, `sequence.go`, `charts.go`, etc. | Corresponding `src/*.rs` |
-| Labels, graphemes, widths, ASCII | `text.go`, `width.go`, `asciitext.go` | Corresponding `src/*.rs` |
-| Portable values | `dates.go`, `entities.go` | `src/dates.rs`, `src/entities.rs` |
-| Theme/style resolution, ANSI | `ansi.go` | `src/ansi.rs` |
-| Fenced Markdown transformation | `markdown.go` | `src/markdown.rs` |
-| CLI and terminal discovery | `cmd/boxmaid/` | `src/bin/boxmaid.rs` |
-| UI adapters | Separate `tui/` module | Feature-gated `src/widget.rs` |
+| Public API and named types | `boxmaid.go` | `rust/src/lib.rs` |
+| Dispatch and source cleanup | `internal/renderer/renderer.go` | `rust/src/lib.rs` |
+| Graph nodes, edges, cluster membership | `internal/renderer/graph.go` | `rust/src/graph.rs` |
+| Graph layout, ranking, ordering, placement, routing | `internal/renderer/layout.go` | `rust/src/layout.rs` |
+| Graph drawing and width-fit attempts | `internal/renderer/draw.go`, `canvas.go` | `rust/src/draw.rs`, `canvas.rs` |
+| Diagram syntax and specialized layout | `internal/renderer/flowchart.go`, `sequence.go`, `charts.go`, etc. | Corresponding `rust/src/*.rs` |
+| Labels, graphemes, widths, ASCII | `internal/renderer/text.go`, `width.go`, `asciitext.go` | Corresponding `rust/src/*.rs` |
+| Portable values | `internal/renderer/dates.go`, `entities.go` | `rust/src/dates.rs`, `entities.rs` |
+| Theme/style resolution, ANSI | `style.go` | `rust/src/ansi.rs` |
+| Fenced Markdown transformation | `internal/renderer/markdown.go` | `rust/src/markdown.rs` |
+| CLI and terminal discovery | `cmd/boxmaid/` | `rust/src/bin/boxmaid.rs` |
+| UI adapters | Separate `tui/` module | Feature-gated `rust/src/widget.rs` |
 | Documentation artwork | `internal/artwork/` | Uses the Go public API |
 
 Graph-family renderers include flowchart, state, class, ER, C4, requirement, and architecture. Their parsers populate the same graph representation. Sequence diagrams use a participant/timeline model; charts use their own scale and series logic. All ultimately draw into the canvas.
+
+## How is the Go API kept compatible?
+
+Public `Picture`, `Cell`, `Options`, `Role`, `Theme`, and error types remain defined in the root package. Their import path, named type identities, fields, and method sets are retained. The public cell grid is built once, directly from the selected canvas after width fitting, with a single backing allocation. Unsuccessful layout attempts do not materialize extra cell grids. Plain-text formatting is shared between the public and internal representations; styling operates directly on the public grid.
+
+Keeping public types at the root also keeps their methods visible in Go API documentation. The internal package is an implementation boundary, not an additional import that consumers must learn.
 
 ## How does graph layout work?
 

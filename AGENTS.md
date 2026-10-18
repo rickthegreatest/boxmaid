@@ -13,6 +13,8 @@ Boxmaid renders a documented subset of Mermaid to terminal text. This repository
 ## Which architectural rules matter?
 
 - Prefer composition and concrete types. Go and Rust have no class inheritance; do not introduce inheritance-like frameworks for reuse.
+- Keep the Go root focused on its named public types/entry points (`boxmaid.go`), styles (`style.go`), and public contract tests. Parsers, layout, canvas, and their private tests live in `internal/renderer/`.
+- Preserve public Go type identities and method sets. Replacing a named public type with an alias to an internal type is an API change; check compatibility when moving implementation code.
 - Graph-family parsers produce the shared graph model. Keep layout/routing out of parsers and terminal/framework dependencies out of the core.
 - Reuse the canvas, label normalization, width/grapheme handling, dates, and numeric/entity helpers. Never truncate display labels by byte offsets.
 - Keep graph membership consistent through `moveNode` / `move_node`.

@@ -8,6 +8,15 @@ Go 1.24+ for the full workspace (the core alone supports 1.22), Rust 1.88+, and 
 
 `go.work` resolves the core and TUI module locally, including the first unreleased core version. `tui/go.mod` has a real tagged dependency and no local replacement, so downstream consumers can use it normally after publication.
 
+## Where should I put a change?
+
+- **Public Go API or styling:** `boxmaid.go` or `style.go`. Keep existing named types and method sets compatible.
+- **Go parsing, layout, and drawing:** `internal/renderer/`, with implementation tests beside the code.
+- **Public golden/fuzz contracts:** `boxmaid_test.go`; the shared corpus remains under `testdata/`.
+- **CLI, TUI, Rust, documentation:** `cmd/boxmaid/`, `tui/`, `rust/`, and `docs/` respectively.
+
+See [the architecture map](docs/architecture.md) for the full package boundaries. Splitting a parser into an additional package should serve a real dependency boundary rather than just shorten a file listing.
+
 ## Which checks should I run?
 
 ```sh

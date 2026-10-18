@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Move Go parsing, layout, canvas, and implementation tests into `internal/renderer/`, leaving the public API, styling, and contract tests at the repository root.
+- Preserve public Go named types and method sets, and build the public cell grid directly from the selected canvas after width fitting.
+- Update the architecture map and contributor/agent guidance for the new package layout.
+
 ## 0.1.1 — 2026-10-18
 
 - Correct the Go module path and best-effort fitting description in Rust's generated API documentation.

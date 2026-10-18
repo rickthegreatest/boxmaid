@@ -192,6 +192,8 @@ Check the exit code and stderr. Never treat a rendered diagram or `Supported`/`s
 
 ## How is the project tested and maintained?
 
+The root Go package contains the public API and styling. Parsing, layout, drawing, and implementation tests live in `internal/renderer/`; the CLI is in `cmd/boxmaid/`, the Bubble Tea module in `tui/`, and the Rust crate in `rust/`.
+
 The graph-based renderers share a graph model, layered layout, and drawing canvas. Both languages use shared fixtures; CI also compares their CLI output at several widths. See [architecture](docs/architecture.md) for the module map and [CONTRIBUTING.md](CONTRIBUTING.md) for the full check sequence.
 
 ```sh
